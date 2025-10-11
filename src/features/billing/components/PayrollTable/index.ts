@@ -1,0 +1,1 @@
+export { PayrollTable } from './PayrollTable';

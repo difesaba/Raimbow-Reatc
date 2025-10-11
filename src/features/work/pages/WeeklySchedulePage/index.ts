@@ -1,0 +1,1 @@
+export { WeeklySchedulePage } from './WeeklySchedulePage';
