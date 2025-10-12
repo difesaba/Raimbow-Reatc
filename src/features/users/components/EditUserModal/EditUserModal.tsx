@@ -27,6 +27,7 @@ import {
   Avatar,
   Alert
 } from '@mui/material';
+import { MuiTelInput } from 'mui-tel-input';
 import type { TransitionProps } from '@mui/material/transitions';
 import {
   Edit,
@@ -73,7 +74,8 @@ export const EditUserModal = ({
     IsAdmin: false,
     isRainbow: false,
     Leader: false,
-    Img: ''
+    Img: '',
+    WhatsApp: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -101,7 +103,8 @@ export const EditUserModal = ({
         IsAdmin: user.IsAdmin,
         isRainbow: user.isRainbow,
         Leader: user.Leader,
-        Img: user.Img || ''
+        Img: user.Img || '',
+        WhatsApp: user.WhatsApp || ''
       });
       setErrors({});
       setSelectedFile(null);
@@ -256,6 +259,17 @@ export const EditUserModal = ({
               </Stack>
               <TextField label="Email" type="email" value={formData.Email} onChange={(e) => handleChange('Email', e.target.value)}
                 required fullWidth size="small" error={!!errors.Email} helperText={errors.Email} disabled={loading || submitting} />
+
+              <MuiTelInput
+                label="WhatsApp (opcional)"
+                value={formData.WhatsApp}
+                onChange={(value) => handleChange('WhatsApp', value)}
+                defaultCountry="US"
+                fullWidth
+                size="small"
+                disabled={loading || submitting}
+                helperText="Número de WhatsApp con código de país"
+              />
 
               <Divider />
 
@@ -453,6 +467,17 @@ export const EditUserModal = ({
               </Stack>
               <TextField label="Email" type="email" value={formData.Email} onChange={(e) => handleChange('Email', e.target.value)}
                 required fullWidth size="small" error={!!errors.Email} helperText={errors.Email} disabled={loading || submitting} />
+
+              <MuiTelInput
+                label="WhatsApp (opcional)"
+                value={formData.WhatsApp}
+                onChange={(value) => handleChange('WhatsApp', value)}
+                defaultCountry="US"
+                fullWidth
+                size="small"
+                disabled={loading || submitting}
+                helperText="Número de WhatsApp con código de país"
+              />
 
               <Divider />
 

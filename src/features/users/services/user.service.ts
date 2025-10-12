@@ -28,21 +28,24 @@ export class UserService {
       const response = await apiService.get(`${this.BASE_PATH}/`);
 
       // Normalizar respuesta del backend
-      let users: User[] = [];
+      let rawUsers: any[] = [];
 
       if (Array.isArray(response.data)) {
         // Opción 1: Array directo
-        users = response.data;
+        rawUsers = response.data;
       } else if (response.data?.users && Array.isArray(response.data.users)) {
         // Opción 2: Objeto con propiedad 'users'
-        users = response.data.users;
+        rawUsers = response.data.users;
       } else if (response.data?.data && Array.isArray(response.data.data)) {
         // Opción 3: Objeto con propiedad 'data'
-        users = response.data.data;
+        rawUsers = response.data.data;
       } else {
         console.warn('⚠️ Unexpected response format:', response.data);
-        users = [];
+        rawUsers = [];
       }
+
+      // Mapear usuarios del backend al formato frontend (camelCase → PascalCase)
+      const users: User[] = rawUsers.map(user => this.mapBackendToFrontend(user));
 
       console.log(`✅ ${users.length} usuarios cargados exitosamente`);
       return users;
@@ -95,8 +98,34 @@ export class UserService {
 
       const response = await apiService.post(`${this.BASE_PATH}/`, backendData);
 
-      console.log('✅ User created successfully:', { ...response.data, Password: undefined });
-      return response.data;
+      // Normalizar respuesta del backend
+      let rawUser: any;
+
+      if (response.data?.UserId || response.data?.userId) {
+        // Opción 1: Usuario directo en response.data
+        rawUser = response.data;
+      } else if (response.data?.user) {
+        // Opción 2: Usuario en propiedad 'user'
+        rawUser = response.data.user;
+      } else if (response.data?.data) {
+        // Opción 3: Usuario en propiedad 'data'
+        rawUser = response.data.data;
+      } else if (Array.isArray(response.data) && response.data.length > 0) {
+        // Opción 4: Array con el usuario en posición 0
+        rawUser = response.data[0];
+      } else if (response.data?.[0]) {
+        // Opción 5: Objeto indexado con 0 (array convertido a objeto)
+        rawUser = response.data[0];
+      } else {
+        console.warn('⚠️ Unexpected response format:', response.data);
+        throw new Error('Formato de respuesta inesperado del backend');
+      }
+
+      // Mapear usuario del backend al formato frontend (camelCase → PascalCase)
+      const createdUser: User = this.mapBackendToFrontend(rawUser);
+
+      console.log('✅ User created successfully:', { ...createdUser, Password: undefined });
+      return createdUser;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message ||
                           error.message ||
@@ -151,8 +180,34 @@ export class UserService {
 
       const response = await apiService.put(`${this.BASE_PATH}/${userId}`, backendData);
 
-      console.log('✅ User updated successfully:', { ...response.data, Password: undefined });
-      return response.data;
+      // Normalizar respuesta del backend
+      let rawUser: any;
+
+      if (response.data?.UserId || response.data?.userId) {
+        // Opción 1: Usuario directo en response.data
+        rawUser = response.data;
+      } else if (response.data?.user) {
+        // Opción 2: Usuario en propiedad 'user'
+        rawUser = response.data.user;
+      } else if (response.data?.data) {
+        // Opción 3: Usuario en propiedad 'data'
+        rawUser = response.data.data;
+      } else if (Array.isArray(response.data) && response.data.length > 0) {
+        // Opción 4: Array con el usuario en posición 0
+        rawUser = response.data[0];
+      } else if (response.data?.[0]) {
+        // Opción 5: Objeto indexado con 0 (array convertido a objeto)
+        rawUser = response.data[0];
+      } else {
+        console.warn('⚠️ Unexpected response format:', response.data);
+        throw new Error('Formato de respuesta inesperado del backend');
+      }
+
+      // Mapear usuario del backend al formato frontend (camelCase → PascalCase)
+      const updatedUser: User = this.mapBackendToFrontend(rawUser);
+
+      console.log('✅ User updated successfully:', { ...updatedUser, Password: undefined });
+      return updatedUser;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message ||
                           error.message ||
@@ -359,6 +414,62 @@ export class UserService {
   // ==================== MÉTODOS HELPER ====================
 
   /**
+   * 🔤 Capitalizar primera letra de un texto
+   * @param text - Texto a capitalizar
+   * @returns Texto con primera letra en mayúscula
+   */
+  private static capitalize(text: string): string {
+    if (!text || text.length === 0) return text;
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  }
+
+  /**
+   * 📞 Limpiar número de teléfono (eliminar espacios y caracteres no deseados)
+   * @param phone - Número de teléfono
+   * @returns Número limpio sin espacios (ej: "+573167594314")
+   */
+  private static cleanPhoneNumber(phone: string): string {
+    if (!phone) return '';
+    // Eliminar todos los espacios, guiones, paréntesis
+    return phone.replace(/[\s\-()]/g, '');
+  }
+
+  /**
+   * 🔄 Mapear respuesta del backend al formato frontend
+   * Convierte camelCase a PascalCase según especificaciones del frontend
+   * @param backendUser - Usuario en formato backend (camelCase)
+   * @returns Usuario en formato frontend (PascalCase)
+   */
+  private static mapBackendToFrontend(backendUser: any): User {
+    // Convertir Status a número explícitamente para evitar problemas con strings
+    let status = 1; // Default activo
+    if (backendUser.status !== undefined && backendUser.status !== null) {
+      status = Number(backendUser.status);
+    } else if (backendUser.Status !== undefined && backendUser.Status !== null) {
+      status = Number(backendUser.Status);
+    }
+
+    return {
+      UserId: backendUser.userId || backendUser.UserId,
+      FirstName: backendUser.firstName || backendUser.FirstName || '',
+      LastName: backendUser.lastName || backendUser.LastName || '',
+      Email: backendUser.email || backendUser.Email || '',
+      Password: backendUser.password || backendUser.Password,
+      RoleId: backendUser.role || backendUser.RoleId || 0,
+      Company: backendUser.company || backendUser.Company || '',
+      Salary: backendUser.salary || backendUser.Salary || 0,
+      DiscountHour: backendUser.discount || backendUser.DiscountHour || 0,
+      Status: status, // Status como número: 1 = activo, 0 = inactivo
+      IsAdmin: backendUser.isAdmin !== undefined ? backendUser.isAdmin : backendUser.IsAdmin || false,
+      isRainbow: backendUser.isRainbow || false,
+      Leader: backendUser.leader !== undefined ? backendUser.leader : backendUser.Leader || false,
+      Img: backendUser.img || backendUser.Img || '',
+      WhatsApp: backendUser.whatsapp || backendUser.whatsApp || backendUser.WhatsApp || '', // whatsapp en minúsculas
+      CreateDate: backendUser.createDate || backendUser.CreateDate || new Date().toISOString()
+    };
+  }
+
+  /**
    * 🔄 Mapear datos de creación al formato del backend
    * Transforma PascalCase a camelCase según especificaciones del backend
    * @param userData - Datos del usuario en formato frontend
@@ -366,16 +477,20 @@ export class UserService {
    */
   private static mapCreateUserToBackend(userData: CreateUserDTO) {
     return {
-      firstName: userData.FirstName,
-      lastName: userData.LastName,
+      firstName: this.capitalize(userData.FirstName),
+      lastName: this.capitalize(userData.LastName),
       email: userData.Email,
       password: userData.Password,
       role: userData.RoleId,
+      company: userData.Company,
       salary: userData.Salary,
-      discount: userData.DiscountHour,
+      discount: userData.DiscountHour || 0,
+      status: userData.Status,
+      isAdmin: userData.IsAdmin || false,
       isRainbow: userData.isRainbow || false,
       leader: userData.Leader || false,
-      img: userData.Img || ''
+      img: userData.Img || '',
+      whatsapp: this.cleanPhoneNumber(userData.WhatsApp || '') // Limpiar espacios
     };
   }
 
@@ -387,17 +502,20 @@ export class UserService {
    */
   private static mapUpdateUserToBackend(userData: UpdateUserDTO) {
     return {
-      firstName: userData.FirstName,
-      lastName: userData.LastName,
+      firstName: this.capitalize(userData.FirstName),
+      lastName: this.capitalize(userData.LastName),
       email: userData.Email,
       password: userData.Password,
       role: userData.RoleId,
+      company: userData.Company,
       salary: userData.Salary,
-      discount: userData.DiscountHour,
+      discount: userData.DiscountHour || 0,
       status: userData.Status,
+      isAdmin: userData.IsAdmin,
       isRainbow: userData.isRainbow,
       leader: userData.Leader,
-      img: userData.Img
+      img: userData.Img || '',
+      whatsapp: this.cleanPhoneNumber(userData.WhatsApp || '') // Limpiar espacios
     };
   }
 

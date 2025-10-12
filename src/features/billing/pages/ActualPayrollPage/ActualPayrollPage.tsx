@@ -19,7 +19,7 @@ export const ActualPayrollPage: React.FC = () => {
       sx={{
         minHeight: '100vh',
         backgroundColor: 'background.default',
-        py: 3
+        py: { xs: 2, sm: 3 } // Responsive vertical padding
       }}
     >
       <WeeklyPayroll />

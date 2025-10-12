@@ -28,6 +28,7 @@ import {
   Avatar,
   Alert
 } from '@mui/material';
+import { MuiTelInput } from 'mui-tel-input';
 import type { TransitionProps } from '@mui/material/transitions';
 import {
   Person,
@@ -74,7 +75,8 @@ export const CreateUserModal = ({
     IsAdmin: false,
     isRainbow: false,
     Leader: false,
-    Img: ''
+    Img: '',
+    WhatsApp: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -104,7 +106,8 @@ export const CreateUserModal = ({
         IsAdmin: false,
         isRainbow: false,
         Leader: false,
-        Img: ''
+        Img: '',
+        WhatsApp: ''
       });
       setErrors({});
       setShowPassword(false);
@@ -313,6 +316,17 @@ export const CreateUserModal = ({
               </Stack>
               <TextField label="Email" type="email" value={formData.Email} onChange={(e) => handleChange('Email', e.target.value)}
                 required fullWidth size="small" error={!!errors.Email} helperText={errors.Email} disabled={loading || submitting} />
+
+              <MuiTelInput
+                label="WhatsApp (opcional)"
+                value={formData.WhatsApp}
+                onChange={(value) => handleChange('WhatsApp', value)}
+                defaultCountry="US"
+                fullWidth
+                size="small"
+                disabled={loading || submitting}
+                helperText="Número de WhatsApp con código de país"
+              />
 
               <Divider />
 
@@ -543,6 +557,17 @@ export const CreateUserModal = ({
               </Stack>
               <TextField label="Email" type="email" value={formData.Email} onChange={(e) => handleChange('Email', e.target.value)}
                 required fullWidth size="small" error={!!errors.Email} helperText={errors.Email} disabled={loading || submitting} />
+
+              <MuiTelInput
+                label="WhatsApp (opcional)"
+                value={formData.WhatsApp}
+                onChange={(value) => handleChange('WhatsApp', value)}
+                defaultCountry="US"
+                fullWidth
+                size="small"
+                disabled={loading || submitting}
+                helperText="Número de WhatsApp con código de país"
+              />
 
               <Divider />
 

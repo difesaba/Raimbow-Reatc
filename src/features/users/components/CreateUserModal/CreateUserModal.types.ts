@@ -30,4 +30,5 @@ export interface CreateUserData {
   isRainbow: boolean;
   Leader: boolean;
   Img: string;
+  WhatsApp: string; // Número de WhatsApp en formato internacional
 }

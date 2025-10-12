@@ -103,8 +103,13 @@ export const WeeklyPayroll: React.FC = () => {
   const errorMessage = error?.message || detailsError?.message || exportError?.message || 'Error desconocido';
 
   return (
-    <Container maxWidth="xl">
-      <Stack spacing={3}>
+    <Container
+      maxWidth="xl"
+      sx={{
+        px: { xs: 2, sm: 3, md: 4 } // Responsive horizontal padding
+      }}
+    >
+      <Stack spacing={{ xs: 2, sm: 3 }}>
         {/* Header with summary metrics */}
         <PayrollHeader
           weekRange={weekRange}

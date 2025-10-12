@@ -22,6 +22,7 @@ export interface User {
   DiscountHour?: number;
   isRainbow: boolean;
   Leader: boolean;
+  WhatsApp?: string; // Número de WhatsApp en formato internacional (e.g., +18644785555)
 }
 
 /**
@@ -41,6 +42,7 @@ export interface CreateUserDTO {
   DiscountHour?: number;
   isRainbow: boolean;
   Leader: boolean;
+  WhatsApp?: string; // Número de WhatsApp en formato internacional (opcional)
 }
 
 /**
@@ -61,6 +63,7 @@ export interface UpdateUserDTO {
   DiscountHour?: number;
   isRainbow: boolean;
   Leader: boolean;
+  WhatsApp?: string; // Número de WhatsApp en formato internacional (opcional)
 }
 
 /**

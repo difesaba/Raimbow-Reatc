@@ -3,13 +3,14 @@ import { Search as SearchIcon  } from '@mui/icons-material';
 import type { LotFiltersProps } from './LotFilters.types';
 
 /**
- * 🔍 LotFilters - Filtros para consulta de lotes
+ * 🔍 LotFilters - Filtros para consulta de lotes (Responsive)
  *
- * Diseño:
- * - Todos los campos size="small" para consistencia
+ * Diseño Responsive:
+ * - Desktop: Filtros en fila horizontal
+ * - Mobile: Filtros apilados verticalmente
  * - Subdivisión obligatoria (Autocomplete)
  * - Número de lote opcional (TextField alfanumérico)
- * - Botón de búsqueda alineado con los campos
+ * - Botón de búsqueda adaptativo
  */
 export const LotFilters: React.FC<LotFiltersProps> = ({
   subdivisions,
@@ -25,14 +26,19 @@ export const LotFilters: React.FC<LotFiltersProps> = ({
   const canSearch = selectedSubdivision !== null && !disabled;
 
   return (
-    <Box padding={3}>
+    <Box padding={{ xs: 2, md: 3 }}>
       <Stack
         direction={{ xs: 'column', md: 'row' }}
-        spacing={3}
+        spacing={{ xs: 2, md: 3 }}
         alignItems={{ xs: 'stretch', md: 'flex-start' }}
       >
         {/* Subdivision Selector - OBLIGATORIO */}
-        <Box flex={2} minWidth={300}>
+        <Box
+          sx={{
+            flex: { xs: '1', md: '2' },
+            width: '100%'
+          }}
+        >
           <Autocomplete
             options={subdivisions}
             value={selectedSubdivision}
@@ -55,7 +61,12 @@ export const LotFilters: React.FC<LotFiltersProps> = ({
         </Box>
 
         {/* Lot Number - OPCIONAL */}
-        <Box flex={1} minWidth={220}>
+        <Box
+          sx={{
+            flex: { xs: '1', md: '1' },
+            width: '100%'
+          }}
+        >
           <TextField
             fullWidth
             label="Número de Lote"
@@ -75,13 +86,21 @@ export const LotFilters: React.FC<LotFiltersProps> = ({
         </Box>
 
         {/* Search Button */}
-        <Box minWidth={140}>
+        <Box
+          sx={{
+            width: { xs: '100%', md: 'auto' },
+            minWidth: { md: '140px' }
+          }}
+        >
           <Button
             variant="contained"
             fullWidth
             onClick={onSearch}
             disabled={!canSearch || isSearching}
             startIcon={isSearching ? <CircularProgress size={20} /> : <SearchIcon />}
+            sx={{
+              height: { xs: '48px', md: '56px' }
+            }}
           >
             {isSearching ? 'Consultando...' : 'Consultar'}
           </Button>

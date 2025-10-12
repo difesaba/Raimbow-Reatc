@@ -22,7 +22,10 @@ import {
   TableRow,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  useMediaQuery,
+  useTheme,
+  List
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -161,6 +164,9 @@ export const TaskAuditDialog: React.FC<TaskAuditDialogProps> = ({
   taskId,
   onClose
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
@@ -211,31 +217,32 @@ export const TaskAuditDialog: React.FC<TaskAuditDialogProps> = ({
       onClose={handleClose}
       maxWidth="md"
       fullWidth
+      fullScreen={isMobile}
       scroll="paper"
     >
       {/* Header */}
-      <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 2 }}>
+      <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 2, px: { xs: 2, md: 3 } }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Box>
             <Stack direction="row" alignItems="center" spacing={1}>
-              <HistoryIcon color="primary" fontSize="medium" />
-              <Typography variant="h6" fontWeight={600}>
+              <HistoryIcon color="primary" fontSize={isMobile ? 'small' : 'medium'} />
+              <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={600}>
                 Auditoría de Tarea
               </Typography>
             </Stack>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
+            <Typography variant={isMobile ? 'caption' : 'body2'} color="text.secondary" mt={0.5}>
               Historial completo de cambios
               {taskId && ` - Tarea #${taskId}`}
             </Typography>
           </Box>
-          <IconButton onClick={handleClose} size="medium">
+          <IconButton onClick={handleClose} size={isMobile ? 'small' : 'medium'}>
             <CloseIcon />
           </IconButton>
         </Stack>
       </DialogTitle>
 
       {/* Content */}
-      <DialogContent sx={{ p: 3, pt: 3 }}>
+      <DialogContent sx={{ p: { xs: 2, md: 3 }, pt: { xs: 2, md: 3 } }}>
         {/* Loading State */}
         {loading && (
           <Box display="flex" justifyContent="center" alignItems="center" py={8}>
@@ -286,7 +293,12 @@ export const TaskAuditDialog: React.FC<TaskAuditDialogProps> = ({
                   }}
                 >
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Stack direction="row" alignItems="center" spacing={2} width="100%">
+                    <Stack
+                      direction={{ xs: 'column', md: 'row' }}
+                      alignItems={{ xs: 'flex-start', md: 'center' }}
+                      spacing={{ xs: 1, md: 2 }}
+                      width="100%"
+                    >
                       {/* Action Type Chip */}
                       <Chip
                         icon={getActionTypeIcon(record.ActionType)}
@@ -298,17 +310,17 @@ export const TaskAuditDialog: React.FC<TaskAuditDialogProps> = ({
                       {/* Date */}
                       <Stack direction="row" alignItems="center" spacing={0.5}>
                         <CalendarIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" fontSize={{ xs: '0.75rem', md: '0.875rem' }}>
                           {formatDate(record.CreatedAt)}
                         </Typography>
                       </Stack>
 
-                      <Box flex={1} />
+                      <Box flex={1} display={{ xs: 'none', md: 'block' }} />
 
                       {/* User */}
                       <Stack direction="row" alignItems="center" spacing={0.5}>
                         <PersonIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" fontSize={{ xs: '0.75rem', md: '0.875rem' }}>
                           {record.Usuario || `Usuario #${record.UserId}`}
                         </Typography>
                       </Stack>
@@ -368,42 +380,85 @@ export const TaskAuditDialog: React.FC<TaskAuditDialogProps> = ({
                                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                                   Cambios Realizados
                                 </Typography>
-                                <TableContainer component={Paper} variant="outlined">
-                                  <Table size="small">
-                                    <TableHead>
-                                      <TableRow>
-                                        <TableCell><strong>Campo</strong></TableCell>
-                                        <TableCell><strong>Valor Anterior</strong></TableCell>
-                                        <TableCell><strong>Valor Nuevo</strong></TableCell>
-                                      </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                      {changeFields.map(([field, change]) => {
-                                        // Type assertion - we know change has Old/New structure from hasOldNewStructure check
-                                        const typedChange = change as { Old: unknown; New: unknown };
-                                        return (
-                                          <TableRow key={field}>
-                                            <TableCell>
-                                              <Typography variant="body2" fontWeight={500}>
-                                                {translateFieldName(field)}
+
+                                {/* Vista Mobile: Lista */}
+                                {isMobile ? (
+                                  <List disablePadding>
+                                    {changeFields.map(([field, change], idx) => {
+                                      const typedChange = change as { Old: unknown; New: unknown };
+                                      return (
+                                        <Paper
+                                          key={field}
+                                          variant="outlined"
+                                          sx={{
+                                            mb: idx < changeFields.length - 1 ? 1.5 : 0,
+                                            p: 1.5
+                                          }}
+                                        >
+                                          <Stack spacing={1}>
+                                            <Typography variant="caption" fontWeight={600} color="primary">
+                                              {translateFieldName(field)}
+                                            </Typography>
+                                            <Divider />
+                                            <Box>
+                                              <Typography variant="caption" color="text.secondary">
+                                                Anterior:
                                               </Typography>
-                                            </TableCell>
-                                            <TableCell>
                                               <Typography variant="body2" color="text.secondary">
                                                 {formatValue(typedChange.Old)}
                                               </Typography>
-                                            </TableCell>
-                                            <TableCell>
+                                            </Box>
+                                            <Box>
+                                              <Typography variant="caption" color="text.secondary">
+                                                Nuevo:
+                                              </Typography>
                                               <Typography variant="body2" color="primary.main" fontWeight={500}>
                                                 {formatValue(typedChange.New)}
                                               </Typography>
-                                            </TableCell>
-                                          </TableRow>
-                                        );
-                                      })}
-                                    </TableBody>
-                                  </Table>
-                                </TableContainer>
+                                            </Box>
+                                          </Stack>
+                                        </Paper>
+                                      );
+                                    })}
+                                  </List>
+                                ) : (
+                                  /* Vista Desktop: Tabla */
+                                  <TableContainer component={Paper} variant="outlined">
+                                    <Table size="small">
+                                      <TableHead>
+                                        <TableRow>
+                                          <TableCell><strong>Campo</strong></TableCell>
+                                          <TableCell><strong>Valor Anterior</strong></TableCell>
+                                          <TableCell><strong>Valor Nuevo</strong></TableCell>
+                                        </TableRow>
+                                      </TableHead>
+                                      <TableBody>
+                                        {changeFields.map(([field, change]) => {
+                                          const typedChange = change as { Old: unknown; New: unknown };
+                                          return (
+                                            <TableRow key={field}>
+                                              <TableCell>
+                                                <Typography variant="body2" fontWeight={500}>
+                                                  {translateFieldName(field)}
+                                                </Typography>
+                                              </TableCell>
+                                              <TableCell>
+                                                <Typography variant="body2" color="text.secondary">
+                                                  {formatValue(typedChange.Old)}
+                                                </Typography>
+                                              </TableCell>
+                                              <TableCell>
+                                                <Typography variant="body2" color="primary.main" fontWeight={500}>
+                                                  {formatValue(typedChange.New)}
+                                                </Typography>
+                                              </TableCell>
+                                            </TableRow>
+                                          );
+                                        })}
+                                      </TableBody>
+                                    </Table>
+                                  </TableContainer>
+                                )}
                               </Box>
                             )}
                           </Stack>
@@ -421,8 +476,14 @@ export const TaskAuditDialog: React.FC<TaskAuditDialogProps> = ({
       <Divider />
 
       {/* Actions */}
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={handleClose} variant="contained" color="primary">
+      <DialogActions sx={{ px: { xs: 2, md: 3 }, py: { xs: 1.5, md: 2 } }}>
+        <Button
+          onClick={handleClose}
+          variant="contained"
+          color="primary"
+          fullWidth={isMobile}
+          sx={{ minHeight: { xs: '44px', md: 'auto' } }}
+        >
           Cerrar
         </Button>
       </DialogActions>

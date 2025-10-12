@@ -18,6 +18,12 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
+  Card,
+  CardContent,
+  CardActions,
+  Box,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   PersonAdd,
@@ -29,7 +35,9 @@ import {
   Delete,
   Edit,
   MoreVert,
-  History
+  History,
+  Home as LotIcon,
+  LocationCity as SubdivisionIcon
 } from '@mui/icons-material';
 import type { WorkAssignmentTableProps } from './WorkAssignmentTable.types';
 
@@ -41,6 +49,9 @@ export const WorkAssignmentTable = ({
   onViewAudit,
   onDeleteWork
 }: WorkAssignmentTableProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // Menu state
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedWork, setSelectedWork] = useState<any>(null);
@@ -175,185 +186,355 @@ export const WorkAssignmentTable = ({
   }
 
   return (
-    <TableContainer style={{ maxHeight: 600, overflow: 'auto' }}>
-      <Table stickyHeader>
-        <TableHead>
-          <TableRow>
-            <TableCell>Número</TableCell>
-            <TableCell>Tipo</TableCell>
-            <TableCell>Proceso</TableCell>
-            <TableCell>Subdivision</TableCell>
-    
-            <TableCell>Manager</TableCell>
-            <TableCell>Pies</TableCell>
-            <TableCell>Colores</TableCell>
-            <TableCell>Puerta</TableCell>
-            <TableCell>Fecha</TableCell>
-            <TableCell>Acciones</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+    <>
+      {/* Vista Mobile: Cards */}
+      {isMobile ? (
+        <Stack spacing={2} padding={{ xs: 1, sm: 2 }}>
           {sortedWorks.map((work, index) => {
             const needsManager = !work.UserRainbow;
 
             return (
-              <TableRow
+              <Card
                 key={`${work.LotId}-${work.Status}-${work.TaskId || index}`}
-                hover
+                variant="outlined"
+                sx={{
+                  '&:hover': {
+                    boxShadow: theme.shadows[4],
+                    borderColor: needsManager ? 'warning.main' : 'primary.main'
+                  },
+                  ...(needsManager && {
+                    borderColor: 'warning.light',
+                    borderWidth: 2
+                  })
+                }}
               >
-                <TableCell>
-                  <Typography variant="body2" fontWeight={500}>
-                    {work.Number || 'N/A'}
-                  </Typography>
-                </TableCell>
-
-                <TableCell>
-                  <Chip
-                    label={work.Town === 1 ? 'Townhome' : 'Lote'}
-                    size="small"
-                    color={work.Town === 1 ? 'info' : 'default'}
-                    variant="outlined"
-                  />
-                </TableCell>
-
-                <TableCell>
-                  <Stack spacing={0.5}>
-                    <Typography variant="body2" fontWeight={500}>
-                      {work.WorkName}
-                    </Typography>
-                    {work.Obs && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                      >
-                        {work.Obs}
+                <CardContent>
+                  {/* Header del Card */}
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" marginBottom={2}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <LotIcon color="primary" />
+                      <Typography variant="h6" component="div" color="primary">
+                        {work.Number || 'N/A'}
                       </Typography>
+                      <Chip
+                        label={work.Town === 1 ? 'Townhome' : 'Lote'}
+                        size="small"
+                        color={work.Town === 1 ? 'info' : 'default'}
+                        variant="outlined"
+                      />
+                    </Stack>
+                    {!needsManager && work.TaskId && work.TaskId > 0 && (
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleMenuOpen(e, work)}
+                        aria-label="más acciones"
+                      >
+                        <MoreVert fontSize="small" />
+                      </IconButton>
                     )}
                   </Stack>
-                </TableCell>
 
-                <TableCell>
-                  <Typography variant="body2">
-                    {work.ClientName}
-                  </Typography>
-                </TableCell>
+                  <Divider sx={{ marginBottom: 2 }} />
 
-              
+                  {/* Información Principal */}
+                  <Stack spacing={1.5}>
+                    {/* Proceso */}
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                        PROCESO
+                      </Typography>
+                      <Typography variant="body2" fontWeight={500}>
+                        {work.WorkName}
+                      </Typography>
+                      {work.Obs && (
+                        <Typography variant="caption" color="text.secondary">
+                          {work.Obs}
+                        </Typography>
+                      )}
+                    </Box>
 
-                <TableCell>
-                  {work.ManagerName ? (
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Person fontSize="small" color="action" />
+                    {/* Subdivisión */}
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <SubdivisionIcon fontSize="small" color="action" />
+                      <Typography variant="body2" color="text.secondary">
+                        {work.ClientName}
+                      </Typography>
+                    </Stack>
+
+                    {/* Manager */}
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      {work.ManagerName ? (
+                        <>
+                          <Person fontSize="small" color="action" />
+                          <Typography variant="body2">
+                            Manager: <strong>{work.ManagerName}</strong>
+                          </Typography>
+                        </>
+                      ) : (
+                        <>
+                          <Warning fontSize="small" color="warning" />
+                          <Typography variant="body2" color="warning.main" fontWeight={600}>
+                            Sin manager asignado
+                          </Typography>
+                        </>
+                      )}
+                    </Stack>
+
+                    {/* Fecha */}
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <CalendarToday fontSize="small" color="action" />
                       <Typography variant="body2">
-                        {work.ManagerName}
+                        {work.ScheduledDate || 'Sin fecha'}
                       </Typography>
                     </Stack>
-                  ) : (
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Warning fontSize="small" color="warning" />
-                      <Typography
-                        variant="body2"
-                        color="warning.main"
-                        fontWeight={500}
-                      >
-                        No asignado
-                      </Typography>
-                    </Stack>
-                  )}
-                </TableCell>
 
-                <TableCell>
-                  <Typography variant="body2">
-                    {work.SFQuantity || '-'}
-                  </Typography>
-                </TableCell>
-
-                <TableCell>
-                  <Typography variant="body2">
-                    {work.Colors || '-'}
-                  </Typography>
-                </TableCell>
-
-                <TableCell>
-                  <Typography variant="body2">
-                    {work.DoorDesc || '-'}
-                  </Typography>
-                </TableCell>
-
-                <TableCell>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <CalendarToday fontSize="small" color="action" />
-                    <Typography variant="body2">
-                      {work.ScheduledDate || 'Sin fecha'}
-                    </Typography>
+                    {/* Información Adicional (solo si existe) */}
+                    {(work.SFQuantity || work.Colors || work.DoorDesc) && (
+                      <Box sx={{ paddingTop: 1, borderTop: 1, borderColor: 'divider' }}>
+                        <Stack spacing={0.5}>
+                          {work.SFQuantity && (
+                            <Typography variant="caption" color="text.secondary">
+                              SQ FT: {work.SFQuantity}
+                            </Typography>
+                          )}
+                          {work.Colors && (
+                            <Typography variant="caption" color="text.secondary">
+                              Colores: {work.Colors}
+                            </Typography>
+                          )}
+                          {work.DoorDesc && (
+                            <Typography variant="caption" color="text.secondary">
+                              Puerta: {work.DoorDesc}
+                            </Typography>
+                          )}
+                        </Stack>
+                      </Box>
+                    )}
                   </Stack>
-                </TableCell>
+                </CardContent>
 
-                <TableCell>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    {needsManager ? (
-                      // Case 1: Work without manager - Only "Asignar" button (no menu)
+                {/* Acciones */}
+                <CardActions sx={{ padding: 2, paddingTop: 0 }}>
+                  {needsManager ? (
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="primary"
+                      startIcon={<PersonAdd />}
+                      onClick={() => onEdit(work)}
+                    >
+                      Asignar Manager
+                    </Button>
+                  ) : work.TaskId && work.TaskId > 0 ? (
+                    <Stack direction="row" spacing={1} width="100%">
                       <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        startIcon={<PersonAdd />}
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<Edit />}
                         onClick={() => onEdit(work)}
                       >
-                        Asignar
+                        Editar
                       </Button>
-                    ) : work.TaskId && work.TaskId > 0 ? (
-                      // Case 2: Work with manager AND TaskId > 0 - Show Edit + Audit + Menu
-                      <>
-                        <Tooltip title="Editar">
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => onEdit(work)}
-                            aria-label="editar tarea"
-                          >
-                            <Edit fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Ver auditoría">
-                          <IconButton
-                            size="small"
-                            color="info"
-                            onClick={() => onViewAudit(work)}
-                            aria-label="ver auditoría"
-                          >
-                            <History fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Más acciones">
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuOpen(e, work)}
-                            aria-label="más acciones"
-                          >
-                            <MoreVert fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    ) : (
-                      // Case 3: Work with manager but TaskId <= 0 - Only menu
-                      <Tooltip title="Más acciones">
+                      <Tooltip title="Ver auditoría">
                         <IconButton
-                          size="small"
-                          onClick={(e) => handleMenuOpen(e, work)}
-                          aria-label="más acciones"
+                          color="info"
+                          onClick={() => onViewAudit(work)}
                         >
-                          <MoreVert fontSize="small" />
+                          <History />
                         </IconButton>
                       </Tooltip>
-                    )}
-                  </Stack>
-                </TableCell>
-              </TableRow>
+                    </Stack>
+                  ) : (
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => onViewDetails(work)}
+                    >
+                      Ver Detalles
+                    </Button>
+                  )}
+                </CardActions>
+              </Card>
             );
           })}
-        </TableBody>
-      </Table>
+        </Stack>
+      ) : (
+        /* Vista Desktop: Tabla */
+        <TableContainer style={{ maxHeight: 600, overflow: 'auto' }}>
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Número</TableCell>
+                <TableCell>Tipo</TableCell>
+                <TableCell>Proceso</TableCell>
+                <TableCell>Subdivision</TableCell>
+                <TableCell>Manager</TableCell>
+                <TableCell>Pies</TableCell>
+                <TableCell>Colores</TableCell>
+                <TableCell>Puerta</TableCell>
+                <TableCell>Fecha</TableCell>
+                <TableCell>Acciones</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {sortedWorks.map((work, index) => {
+                const needsManager = !work.UserRainbow;
+
+                return (
+                  <TableRow
+                    key={`${work.LotId}-${work.Status}-${work.TaskId || index}`}
+                    hover
+                  >
+                    <TableCell>
+                      <Typography variant="body2" fontWeight={500}>
+                        {work.Number || 'N/A'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip
+                        label={work.Town === 1 ? 'Townhome' : 'Lote'}
+                        size="small"
+                        color={work.Town === 1 ? 'info' : 'default'}
+                        variant="outlined"
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <Stack spacing={0.5}>
+                        <Typography variant="body2" fontWeight={500}>
+                          {work.WorkName}
+                        </Typography>
+                        {work.Obs && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
+                            {work.Obs}
+                          </Typography>
+                        )}
+                      </Stack>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography variant="body2">
+                        {work.ClientName}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      {work.ManagerName ? (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Person fontSize="small" color="action" />
+                          <Typography variant="body2">
+                            {work.ManagerName}
+                          </Typography>
+                        </Stack>
+                      ) : (
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Warning fontSize="small" color="warning" />
+                          <Typography
+                            variant="body2"
+                            color="warning.main"
+                            fontWeight={500}
+                          >
+                            No asignado
+                          </Typography>
+                        </Stack>
+                      )}
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography variant="body2">
+                        {work.SFQuantity || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography variant="body2">
+                        {work.Colors || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography variant="body2">
+                        {work.DoorDesc || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <CalendarToday fontSize="small" color="action" />
+                        <Typography variant="body2">
+                          {work.ScheduledDate || 'Sin fecha'}
+                        </Typography>
+                      </Stack>
+                    </TableCell>
+
+                    <TableCell>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        {needsManager ? (
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="small"
+                            startIcon={<PersonAdd />}
+                            onClick={() => onEdit(work)}
+                          >
+                            Asignar
+                          </Button>
+                        ) : work.TaskId && work.TaskId > 0 ? (
+                          <>
+                            <Tooltip title="Editar">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => onEdit(work)}
+                                aria-label="editar tarea"
+                              >
+                                <Edit fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Ver auditoría">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => onViewAudit(work)}
+                                aria-label="ver auditoría"
+                              >
+                                <History fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Más acciones">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => handleMenuOpen(e, work)}
+                                aria-label="más acciones"
+                              >
+                                <MoreVert fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </>
+                        ) : (
+                          <Tooltip title="Más acciones">
+                            <IconButton
+                              size="small"
+                              onClick={(e) => handleMenuOpen(e, work)}
+                              aria-label="más acciones"
+                            >
+                              <MoreVert fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       {/* Context Menu */}
       <Menu
@@ -369,9 +550,7 @@ export const WorkAssignmentTable = ({
           horizontal: 'right',
         }}
       >
-        {/* Menu options based on TaskId status */}
         {selectedWork?.TaskId && selectedWork.TaskId > 0 ? (
-          // TaskId > 0: Edit and Audit are quick actions, so only show Details and Delete
           <>
             <MenuItem onClick={handleViewDetails}>
               <ListItemIcon>
@@ -390,7 +569,6 @@ export const WorkAssignmentTable = ({
             </MenuItem>
           </>
         ) : (
-          // TaskId <= 0: Show Edit (disabled), Details, and Audit in menu
           <>
             <MenuItem
               onClick={handleEdit}
@@ -418,6 +596,6 @@ export const WorkAssignmentTable = ({
           </>
         )}
       </Menu>
-    </TableContainer>
+    </>
   );
 };

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Paper, Box, Typography, Alert, Stack, Divider, CircularProgress } from '@mui/material';
+import { Container, Paper, Box, Typography, Alert, Stack, Divider, CircularProgress, useMediaQuery, useTheme } from '@mui/material';
 import { Info as InfoIcon } from '@mui/icons-material';
 import { LotFilters } from '../../components/LotFilters';
 import { LotsTable } from '../../components/LotsTable';
@@ -19,6 +19,9 @@ import type { WorkReport, LotDetail } from '../../interfaces/work.interfaces';
  * - Tabla de resultados: Builder, Subdivisión, Número de Lote
  */
 export const LotsBySubdivisionPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // 🏘️ Hook para cargar subdivisiones
   const {
     subdivisions,
@@ -117,24 +120,24 @@ export const LotsBySubdivisionPage = () => {
   const showResults = hasData;
 
   return (
-    <Container maxWidth="xl">
-      <Stack spacing={3} paddingY={3}>
+    <Container maxWidth="xl" sx={{ paddingX: { xs: 1, sm: 2, md: 3 } }}>
+      <Stack spacing={{ xs: 2, md: 3 }} paddingY={{ xs: 2, md: 3 }}>
         {/* Page Header */}
-        <Box>
-          <Typography variant="h4" gutterBottom>
+        <Box paddingX={{ xs: 1, md: 0 }}>
+          <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
             Lotes por Subdivisión
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Consulte lotes filtrando por subdivisión y opcionalmente por número de lote
           </Typography>
         </Box>
 
         {/* Main Content Paper */}
-        <Paper elevation={0}>
+        <Paper elevation={0} sx={{ padding: { xs: 1, md: 0 } }}>
           <Box>
             {/* Error al cargar subdivisiones */}
             {subdivisionsError && (
-              <Box marginBottom={3}>
+              <Box marginBottom={{ xs: 2, md: 3 }} paddingX={{ xs: 1, md: 0 }}>
                 <Alert severity="error">
                   {subdivisionsError.message || 'Error al cargar subdivisiones'}
                 </Alert>
@@ -143,7 +146,7 @@ export const LotsBySubdivisionPage = () => {
 
             {/* Loading subdivisiones */}
             {subdivisionsLoading && (
-              <Box display="flex" justifyContent="center" padding={2}>
+              <Box display="flex" justifyContent="center" padding={{ xs: 2, md: 3 }}>
                 <CircularProgress size={24} />
                 <Typography variant="body2" marginLeft={2}>
                   Cargando subdivisiones...
@@ -165,23 +168,37 @@ export const LotsBySubdivisionPage = () => {
               />
             )}
 
-            <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: { xs: 2, md: 3 } }} />
 
             {/* Results Section */}
             {showEmptyState && (
-              <Stack alignItems="center" spacing={2} paddingY={8}>
+              <Stack
+                alignItems="center"
+                spacing={2}
+                paddingY={{ xs: 4, md: 8 }}
+                paddingX={{ xs: 2, md: 0 }}
+              >
                 <InfoIcon fontSize="large" color="disabled" />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
+                <Typography
+                  variant={isMobile ? 'body1' : 'h6'}
+                  color="text.secondary"
+                  gutterBottom
+                  textAlign="center"
+                >
                   Seleccione una subdivisión para comenzar
                 </Typography>
-                <Typography variant="body2" color="text.disabled">
+                <Typography
+                  variant="body2"
+                  color="text.disabled"
+                  textAlign="center"
+                >
                   Use los filtros superiores para buscar lotes
                 </Typography>
               </Stack>
             )}
 
             {error && (
-              <Box padding={3}>
+              <Box padding={{ xs: 2, md: 3 }}>
                 <Alert severity="error">
                   {error.message || 'Error al cargar lotes. Por favor intente nuevamente.'}
                 </Alert>
@@ -189,7 +206,7 @@ export const LotsBySubdivisionPage = () => {
             )}
 
             {showNoResults && (
-              <Box padding={3}>
+              <Box padding={{ xs: 2, md: 3 }}>
                 <Alert severity="info">
                   No se encontraron lotes para los filtros seleccionados.
                   Intente con otros criterios de búsqueda.

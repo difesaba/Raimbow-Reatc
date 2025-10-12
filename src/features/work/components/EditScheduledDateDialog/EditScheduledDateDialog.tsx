@@ -13,7 +13,9 @@ import {
   Alert,
   IconButton,
   Chip,
-  Grid
+  Grid,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Close,
@@ -33,6 +35,8 @@ export const EditScheduledDateDialog = ({
   onClose,
   onConfirm
 }: EditScheduledDateDialogProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,9 +44,11 @@ export const EditScheduledDateDialog = ({
   // Pre-populate date picker with current work date when dialog opens
   useEffect(() => {
     if (open && work) {
-      if (work.StartDate) {
+      // Priorizar StartDate, luego ScheduledDate (que mapea a InitialDate)
+      const startDate = work.StartDate || work.ScheduledDate;
+      if (startDate) {
         // Convert YYYY-MM-DD string to Date object
-        setSelectedDate(new Date(work.StartDate));
+        setSelectedDate(new Date(startDate));
       } else {
         // Default to today if no StartDate exists
         setSelectedDate(new Date());
@@ -122,14 +128,15 @@ export const EditScheduledDateDialog = ({
       onClose={() => !loading && handleClose()}
       maxWidth="sm"
       fullWidth
+      fullScreen={isMobile}
     >
       <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 2 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Box>
-            <Typography variant="h6" fontWeight={600} gutterBottom>
+            <Typography variant="h6" fontWeight={600} gutterBottom sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               Editar Fecha Programada
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
               Selecciona la nueva fecha de inicio para esta tarea
             </Typography>
           </Box>
@@ -139,13 +146,13 @@ export const EditScheduledDateDialog = ({
         </Stack>
       </DialogTitle>
 
-      <DialogContent sx={{ p: 3, pt: 3 }}>
+      <DialogContent sx={{ p: { xs: 2, sm: 3 }, pt: { xs: 2, sm: 3 } }}>
         <Stack spacing={3}>
           {/* Work Information */}
-          <Paper elevation={0} sx={{ p: 2, bgcolor: 'grey.50', border: 1, borderColor: 'grey.200' }}>
+          <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'grey.50', border: 1, borderColor: 'grey.200' }}>
             <Grid container spacing={2}>
               {/* Columna Izquierda */}
-              <Grid size={{ xs: 6 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Box mb={1.5}>
                   <Typography variant="caption" color="text.secondary">
                     TRABAJO
@@ -167,7 +174,12 @@ export const EditScheduledDateDialog = ({
                     DURACIÓN
                   </Typography>
                   <Box mt={0.5}>
-                    <Chip label={`${days} día${days > 1 ? 's' : ''}`} size="small" color="info" />
+                    <Chip
+                      label={`${days} día${days > 1 ? 's' : ''}`}
+                      size="small"
+                      color="info"
+                      sx={{ height: { xs: 24, md: 20 } }}
+                    />
                   </Box>
                 </Box>
                 {work.SFQuantity && (
@@ -183,7 +195,7 @@ export const EditScheduledDateDialog = ({
               </Grid>
 
               {/* Columna Derecha */}
-              <Grid size={{ xs: 6 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Box mb={1.5}>
                   <Typography variant="caption" color="text.secondary">
                     CLIENTE
@@ -233,7 +245,7 @@ export const EditScheduledDateDialog = ({
               format="dd/MM/yyyy"
               slotProps={{
                 textField: {
-                  size: 'small',
+                  size: isMobile ? 'medium' : 'small',
                   fullWidth: true
                 }
               }}
@@ -242,11 +254,11 @@ export const EditScheduledDateDialog = ({
 
           {/* Calculated Dates Preview */}
           {calculatedDates && (
-            <Paper elevation={0} sx={{ p: 2, bgcolor: 'success.50', border: 1, borderColor: 'success.200' }}>
+            <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, bgcolor: 'success.50', border: 1, borderColor: 'success.200' }}>
               <Stack spacing={1.5}>
                 <Stack direction="row" alignItems="center" spacing={1}>
-                  <CheckCircle color="success" fontSize="small" />
-                  <Typography variant="subtitle2" fontWeight={600}>
+                  <CheckCircle color="success" sx={{ fontSize: { xs: 20, sm: 'small' } }} />
+                  <Typography variant="subtitle2" fontWeight={600} sx={{ fontSize: { xs: '0.9rem', sm: '0.875rem' } }}>
                     Fechas Calculadas
                   </Typography>
                 </Stack>
@@ -298,11 +310,13 @@ export const EditScheduledDateDialog = ({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2, borderTop: 1, borderColor: 'divider' }}>
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 }, borderTop: 1, borderColor: 'divider' }}>
         <Button
           onClick={handleClose}
           disabled={loading}
           color="inherit"
+          fullWidth={isMobile}
+          sx={{ minHeight: { xs: 44, sm: 36 } }}
         >
           Cancelar
         </Button>
@@ -312,6 +326,8 @@ export const EditScheduledDateDialog = ({
           color="primary"
           variant="contained"
           startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <CalendarToday />}
+          fullWidth={isMobile}
+          sx={{ minHeight: { xs: 44, sm: 36 } }}
         >
           {loading ? 'Guardando...' : 'Guardar Fecha'}
         </Button>

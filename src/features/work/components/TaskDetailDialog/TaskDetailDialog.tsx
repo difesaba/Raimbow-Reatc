@@ -11,21 +11,18 @@ import {
   Chip,
   Grid,
   Paper,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  IconButton
+  IconButton,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Close as CloseIcon,
-  ExpandMore as ExpandMoreIcon,
   CheckCircle as CheckCircleIcon,
   Person as PersonIcon,
   CalendarToday as CalendarIcon,
   Business as BusinessIcon,
   Assignment as AssignmentIcon,
   Info as InfoIcon,
-  History as HistoryIcon,
   Edit as EditIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
@@ -70,6 +67,10 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
   onAssignManager,
   onEditDate
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+
   if (!task) return null;
 
   const status = getTaskStatus(task);
@@ -78,14 +79,15 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth={isTablet ? 'sm' : 'md'}
       fullWidth
+      fullScreen={isMobile}
       scroll="paper"
     >
       {/* Header */}
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h5" fontWeight={600}>
+          <Typography variant="h5" fontWeight={600} sx={{ fontSize: { xs: '1.25rem', sm: '1.5rem' } }}>
             Detalles de la Tarea
           </Typography>
           <IconButton onClick={onClose} size="small">
@@ -100,11 +102,11 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
       <DialogContent>
         <Stack spacing={3} paddingY={2}>
           {/* ============ SECCIÓN 1: INFORMACIÓN GENERAL ============ */}
-          <Paper elevation={0} sx={{ p: 2, backgroundColor: 'action.hover' }}>
+          <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
             <Stack spacing={2}>
               <Box display="flex" alignItems="center" gap={1}>
-                <AssignmentIcon color="primary" />
-                <Typography variant="h6" fontWeight={600}>
+                <AssignmentIcon color="primary" sx={{ fontSize: { xs: 24, sm: 'medium' } }} />
+                <Typography variant="h6" fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                   Información General
                 </Typography>
               </Box>
@@ -119,7 +121,7 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                   </Typography>
                 </Grid>
 
-                <Grid size={{ xs: 6 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     NÚMERO DE LOTE
                   </Typography>
@@ -128,7 +130,7 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                   </Typography>
                 </Grid>
 
-                <Grid size={{ xs: 6 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     TIPO
                   </Typography>
@@ -138,11 +140,12 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                       size="small"
                       color={task.IsTownHome === 1 ? 'info' : 'default'}
                       variant="outlined"
+                      sx={{ height: { xs: 24, md: 20 } }}
                     />
                   </Box>
                 </Grid>
 
-                <Grid size={{ xs: 6 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     ESTADO
                   </Typography>
@@ -152,16 +155,17 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                       size="small"
                       color={status.color}
                       icon={<CheckCircleIcon fontSize="small" />}
+                      sx={{ height: { xs: 24, md: 20 } }}
                     />
                   </Box>
                 </Grid>
 
-                <Grid size={{ xs: 6 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     SUBDIVISIÓN / CLIENTE
                   </Typography>
                   <Box display="flex" alignItems="center" gap={0.5} marginTop={0.5}>
-                    <BusinessIcon fontSize="small" color="action" />
+                    <BusinessIcon sx={{ fontSize: { xs: 18, sm: 'small' } }} color="action" />
                     <Typography variant="body2">
                       {task.SubName || 'N/A'}
                     </Typography>
@@ -172,11 +176,11 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
           </Paper>
 
           {/* ============ SECCIÓN 2: FECHAS Y DURACIÓN ============ */}
-          <Paper elevation={0} sx={{ p: 2, backgroundColor: 'action.hover' }}>
+          <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
             <Stack spacing={2}>
               <Box display="flex" alignItems="center" gap={1}>
-                <CalendarIcon color="primary" />
-                <Typography variant="h6" fontWeight={600}>
+                <CalendarIcon color="primary" sx={{ fontSize: { xs: 24, sm: 'medium' } }} />
+                <Typography variant="h6" fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                   Fechas y Duración
                 </Typography>
               </Box>
@@ -184,41 +188,41 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
-                    FECHA INICIAL PROGRAMADA
+                    FECHA INICIO REAL {task.StartDate ? '(Prioritaria ⭐)' : ''}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" fontWeight={task.StartDate ? 600 : 400}>
+                    {formatDate(task.StartDate) || 'No asignada'}
+                  </Typography>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    FECHA FIN REAL {task.EndDateTask ? '(Prioritaria ⭐)' : ''}
+                  </Typography>
+                  <Typography variant="body2" fontWeight={task.EndDateTask ? 600 : 400}>
+                    {formatDate(task.EndDateTask) || 'No asignada'}
+                  </Typography>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    FECHA INICIAL PROGRAMADA {!task.StartDate ? '(Fallback)' : ''}
+                  </Typography>
+                  <Typography variant="body2" color={!task.StartDate ? 'text.primary' : 'text.secondary'}>
                     {formatDate(task.InitialDate)}
                   </Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
-                    FECHA FINAL PROGRAMADA
+                    FECHA FINAL PROGRAMADA {!task.EndDateTask ? '(Fallback)' : ''}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" color={!task.EndDateTask ? 'text.primary' : 'text.secondary'}>
                     {formatDate(task.EndDate)}
                   </Typography>
                 </Grid>
 
                 <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    FECHA INICIO REAL
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(task.StartDate)}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    FECHA FIN REAL
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(task.EndDateTask)}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     DURACIÓN PROGRAMADA
                   </Typography>
@@ -228,11 +232,12 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                       size="small"
                       color="primary"
                       variant="outlined"
+                      sx={{ height: { xs: 24, md: 20 } }}
                     />
                   </Box>
                 </Grid>
 
-                <Grid size={{ xs: 6 }}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     DURACIÓN REAL
                   </Typography>
@@ -242,6 +247,7 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                       size="small"
                       color="secondary"
                       variant="outlined"
+                      sx={{ height: { xs: 24, md: 20 } }}
                     />
                   </Box>
                 </Grid>
@@ -250,11 +256,11 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
           </Paper>
 
           {/* ============ SECCIÓN 3: PERSONAL Y RESPONSABLES ============ */}
-          <Paper elevation={0} sx={{ p: 2, backgroundColor: 'action.hover' }}>
+          <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
             <Stack spacing={2}>
               <Box display="flex" alignItems="center" gap={1}>
-                <PersonIcon color="primary" />
-                <Typography variant="h6" fontWeight={600}>
+                <PersonIcon color="primary" sx={{ fontSize: { xs: 24, sm: 'medium' } }} />
+                <Typography variant="h6" fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                   Personal y Responsables
                 </Typography>
               </Box>
@@ -267,7 +273,7 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                   <Box display="flex" alignItems="center" gap={0.5} marginTop={0.5}>
                     {task.Manager ? (
                       <>
-                        <PersonIcon fontSize="small" color="action" />
+                        <PersonIcon sx={{ fontSize: { xs: 18, sm: 'small' } }} color="action" />
                         <Typography variant="body2" fontWeight={500}>
                           {task.Manager}
                         </Typography>
@@ -303,11 +309,11 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
 
           {/* ============ SECCIÓN 4: CARACTERÍSTICAS DEL LOTE ============ */}
           {(task.SFQuantity || task.Colors || task.DoorDesc) && (
-            <Paper elevation={0} sx={{ p: 2, backgroundColor: 'action.hover' }}>
+            <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
               <Stack spacing={2}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <InfoIcon color="primary" />
-                  <Typography variant="h6" fontWeight={600}>
+                  <InfoIcon color="primary" sx={{ fontSize: { xs: 24, sm: 'medium' } }} />
+                  <Typography variant="h6" fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
                     Características del Lote
                   </Typography>
                 </Box>
@@ -352,7 +358,7 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
 
           {/* ============ SECCIÓN 5: OBSERVACIONES ============ */}
           {task.Obs && (
-            <Paper elevation={0} sx={{ p: 2, backgroundColor: 'action.hover' }}>
+            <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
               <Stack spacing={1}>
                 <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
                   OBSERVACIONES
@@ -364,180 +370,88 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
             </Paper>
           )}
 
-          {/* ============ SECCIÓN 6: IDs INTERNOS (Colapsable) ============ */}
-          <Accordion elevation={0}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle2" fontWeight={600}>
-                IDs Internos del Sistema
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    TASK ID
-                  </Typography>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {task.TaskId || 'N/A'}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    LOTE ID
-                  </Typography>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {task.LoteId}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    ID DET
-                  </Typography>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {task.IdDet}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    PROGRESS STATUS ID
-                  </Typography>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {task.ProgressStatusId}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    SUBDIVISION ID
-                  </Typography>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {task.SubdivisionId}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    INVOICE ID
-                  </Typography>
-                  <Typography variant="body2" fontFamily="monospace">
-                    {task.InvoiceId || 'N/A'}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* ============ SECCIÓN 7: AUDITORÍA (Colapsable) ============ */}
-          <Accordion elevation={0}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Box display="flex" alignItems="center" gap={1}>
-                <HistoryIcon fontSize="small" />
-                <Typography variant="subtitle2" fontWeight={600}>
-                  Auditoría
-                </Typography>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    CREADO POR
-                  </Typography>
-                  <Typography variant="body2">
-                    Usuario ID: {task.UserCreate || 'N/A'}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    FECHA DE CREACIÓN
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(task.CreatedAt)}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    ACTUALIZADO POR
-                  </Typography>
-                  <Typography variant="body2">
-                    Usuario ID: {task.UserUpdate || 'N/A'}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12, sm: 6 }}>
-                  <Typography variant="caption" color="text.secondary">
-                    FECHA DE ACTUALIZACIÓN
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(task.UpdatedAt)}
-                  </Typography>
-                </Grid>
-              </Grid>
-            </AccordionDetails>
-          </Accordion>
         </Stack>
       </DialogContent>
 
       {/* Footer con acciones */}
       <Divider />
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Stack direction="row" spacing={2} width="100%" justifyContent="space-between" flexWrap="wrap">
-          {/* Edit button - only if onEdit callback is provided */}
-          {onEdit && (
-            <Button
-              variant="outlined"
-              size="medium"
-              startIcon={<EditIcon />}
-              onClick={() => {
-                onEdit();
-                onClose();
-              }}
-              color="primary"
-            >
-              Editar
-            </Button>
-          )}
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: { xs: 1.5, sm: 2 } }}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          spacing={{ xs: 1, sm: 2 }}
+          width="100%"
+          justifyContent="space-between"
+        >
+          {/* Action buttons group */}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1}
+            flex={1}
+            width={{ xs: '100%', sm: 'auto' }}
+          >
+            {/* Assign Manager button */}
+            {onAssignManager && (
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<PersonIcon />}
+                onClick={() => {
+                  onAssignManager();
+                  onClose();
+                }}
+                color="secondary"
+                fullWidth={isMobile}
+                sx={{ minHeight: { xs: 44, sm: 36 } }}
+              >
+                Asignar Manager
+              </Button>
+            )}
 
-          {/* Assign Manager button - only if callback is provided */}
-          {onAssignManager && (
-            <Button
-              variant="outlined"
-              size="medium"
-              startIcon={<PersonIcon />}
-              onClick={() => {
-                onAssignManager();
-                onClose();
-              }}
-              color="secondary"
-            >
-              Asignar Manager
-            </Button>
-          )}
+            {/* Edit Date button */}
+            {onEditDate && (
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<CalendarIcon />}
+                onClick={() => {
+                  onEditDate();
+                  onClose();
+                }}
+                color="info"
+                fullWidth={isMobile}
+                sx={{ minHeight: { xs: 44, sm: 36 } }}
+              >
+                Editar Fechas
+              </Button>
+            )}
 
-          {/* Edit Date button - only if callback is provided */}
-          {onEditDate && (
-            <Button
-              variant="outlined"
-              size="medium"
-              startIcon={<CalendarIcon />}
-              onClick={() => {
-                onEditDate();
-                onClose();
-              }}
-              color="info"
-            >
-              Editar Fechas
-            </Button>
-          )}
+            {/* Edit button */}
+            {onEdit && (
+              <Button
+                variant="outlined"
+                size="medium"
+                startIcon={<EditIcon />}
+                onClick={() => {
+                  onEdit();
+                  onClose();
+                }}
+                color="primary"
+                fullWidth={isMobile}
+                sx={{ minHeight: { xs: 44, sm: 36 } }}
+              >
+                Editar
+              </Button>
+            )}
+          </Stack>
 
-          <Box flex={1} />
-
-          <Button onClick={onClose} variant="contained" size="medium">
+          {/* Close button */}
+          <Button
+            onClick={onClose}
+            variant="contained"
+            size="medium"
+            fullWidth={isMobile}
+            sx={{ minHeight: { xs: 44, sm: 36 } }}
+          >
             Cerrar
           </Button>
         </Stack>

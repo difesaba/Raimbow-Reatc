@@ -19,7 +19,9 @@ import {
   FormControlLabel,
   Switch,
   Divider,
-  Grid
+  Grid,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   Close,
@@ -57,6 +59,9 @@ export const TaskEditDialog = ({
   onClose,
   onConfirm
 }: TaskEditDialogProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // Manager state
   const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
   const [managers, setManagers] = useState<Manager[]>([]);
@@ -311,9 +316,10 @@ export const TaskEditDialog = ({
       onClose={handleClose}
       maxWidth="md"
       fullWidth
+      fullScreen={isMobile}
     >
       {/* Header */}
-      <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 2 }}>
+      <DialogTitle sx={{ borderBottom: 1, borderColor: 'divider', pb: 2, px: { xs: 2, md: 3 } }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Box>
             <Stack direction="row" alignItems="center" spacing={1}>
@@ -322,31 +328,31 @@ export const TaskEditDialog = ({
               ) : (
                 <Edit color="primary" fontSize="medium" />
               )}
-              <Typography variant="h6" fontWeight={600}>
+              <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={600}>
                 {isFirstAssignment ? 'Asignar Tarea' : 'Editar Tarea'}
               </Typography>
             </Stack>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
+            <Typography variant={isMobile ? 'caption' : 'body2'} color="text.secondary" mt={0.5}>
               {isFirstAssignment
                 ? 'Selecciona el manager y revisa las fechas del proyecto que se guardarán'
                 : 'Modifica el manager, fecha de inicio y estado de completado'
               }
             </Typography>
           </Box>
-          <IconButton onClick={handleClose} size="medium" disabled={saving}>
+          <IconButton onClick={handleClose} size={isMobile ? 'small' : 'medium'} disabled={saving}>
             <Close />
           </IconButton>
         </Stack>
       </DialogTitle>
 
       {/* Content */}
-      <DialogContent sx={{ p: 3, pt: 3 }}>
-        <Stack spacing={3}>
+      <DialogContent sx={{ p: { xs: 2, md: 3 }, pt: { xs: 2, md: 3 } }}>
+        <Stack spacing={{ xs: 2, md: 3 }}>
           {/* Información Básica - Readonly */}
           <Paper
             elevation={0}
             sx={{
-              p: 2.5,
+              p: { xs: 2, md: 2.5 },
               bgcolor: 'grey.50',
               border: 1,
               borderColor: 'grey.200'
@@ -591,14 +597,19 @@ export const TaskEditDialog = ({
               <Paper
                 elevation={0}
                 sx={{
-                  p: 2,
+                  p: { xs: 1.5, md: 2 },
                   bgcolor: completed ? 'success.50' : 'grey.50',
                   border: 1,
                   borderColor: completed ? 'success.200' : 'grey.200',
                   transition: 'all 0.3s ease'
                 }}
               >
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Stack
+                  direction={{ xs: 'column', sm: 'row' }}
+                  alignItems={{ xs: 'stretch', sm: 'center' }}
+                  justifyContent="space-between"
+                  spacing={{ xs: 1.5, sm: 0 }}
+                >
                   <Box flex={1}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <CheckCircle color={completed ? 'success' : 'action'} fontSize="small" />
@@ -648,12 +659,21 @@ export const TaskEditDialog = ({
       <Divider />
 
       {/* Actions */}
-      <DialogActions sx={{ px: 3, py: 2.5 }}>
+      <DialogActions
+        sx={{
+          px: { xs: 2, md: 3 },
+          py: { xs: 1.5, md: 2.5 },
+          flexDirection: { xs: 'column-reverse', sm: 'row' },
+          gap: { xs: 1, sm: 0 }
+        }}
+      >
         <Button
           onClick={handleClose}
           disabled={saving}
           color="inherit"
           size="medium"
+          fullWidth={isMobile}
+          sx={{ minHeight: { xs: '44px', md: 'auto' } }}
         >
           Cancelar
         </Button>
@@ -664,7 +684,11 @@ export const TaskEditDialog = ({
           variant="contained"
           size="medium"
           startIcon={saving ? <CircularProgress size={20} color="inherit" /> : (isFirstAssignment ? <PersonAdd /> : <Save />)}
-          sx={{ minWidth: 140 }}
+          fullWidth={isMobile}
+          sx={{
+            minWidth: { xs: 'auto', md: 140 },
+            minHeight: { xs: '44px', md: 'auto' }
+          }}
         >
           {saving
             ? (isFirstAssignment ? 'Asignando...' : 'Guardando...')

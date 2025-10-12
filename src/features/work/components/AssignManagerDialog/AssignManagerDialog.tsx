@@ -239,7 +239,13 @@ export const AssignManagerDialog = ({
                     <Typography variant="body2" color="text.secondary">
                       Número de Lote
                     </Typography>
-                    <Chip label={work.Number || 'N/A'} size="small" variant="filled" color="primary" />
+                    <Chip
+                      label={work.Number || 'N/A'}
+                      size="small"
+                      variant="filled"
+                      color="primary"
+                      sx={{ height: { xs: 24, md: 20 } }}
+                    />
                   </Stack>
 
                   {/* Property Type */}
@@ -252,6 +258,7 @@ export const AssignManagerDialog = ({
                       size="small"
                       variant="outlined"
                       color={work.Town === 1 ? 'info' : 'default'}
+                      sx={{ height: { xs: 24, md: 20 } }}
                     />
                   </Stack>
 
@@ -260,7 +267,12 @@ export const AssignManagerDialog = ({
                     <Typography variant="body2" color="text.secondary">
                       ID de Tarea
                     </Typography>
-                    <Chip label={`#${work.TaskId || 'N/A'}`} size="small" variant="outlined" />
+                    <Chip
+                      label={`#${work.TaskId || 'N/A'}`}
+                      size="small"
+                      variant="outlined"
+                      sx={{ height: { xs: 24, md: 20 } }}
+                    />
                   </Stack>
 
                   {/* SQ FT */}
@@ -377,7 +389,11 @@ export const AssignManagerDialog = ({
                       renderOption={(props, option) => (
                         <Box component="li" {...props}>
                           <Stack direction="row" alignItems="center" spacing={2} width="100%" py={1}>
-                            <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+                            <Avatar sx={{
+                              bgcolor: 'primary.main',
+                              width: { xs: 48, md: 40 },
+                              height: { xs: 48, md: 40 }
+                            }}>
                               {option.name.charAt(0).toUpperCase()}
                             </Avatar>
                             <Box flex={1}>
@@ -393,6 +409,7 @@ export const AssignManagerDialog = ({
                               size="small"
                               icon={option.available ? <CheckCircle fontSize="inherit" /> : undefined}
                               color={option.available ? "success" : "default"}
+                              sx={{ height: { xs: 24, md: 20 } }}
                             />
                           </Stack>
                         </Box>
@@ -404,14 +421,18 @@ export const AssignManagerDialog = ({
                       <Paper
                         elevation={0}
                         sx={{
-                          p: 2,
+                          p: { xs: 1.5, md: 2 },
                           bgcolor: 'success.50',
                           border: 1,
                           borderColor: 'success.200'
                         }}
                       >
                         <Stack direction="row" alignItems="center" spacing={2}>
-                          <Avatar sx={{ bgcolor: 'success.main', width: 48, height: 48 }}>
+                          <Avatar sx={{
+                            bgcolor: 'success.main',
+                            width: { xs: 56, md: 48 },
+                            height: { xs: 56, md: 48 }
+                          }}>
                             {selectedManager.name.charAt(0).toUpperCase()}
                           </Avatar>
                           <Box flex={1}>
@@ -425,7 +446,7 @@ export const AssignManagerDialog = ({
                               {selectedManager.email}
                             </Typography>
                           </Box>
-                          <CheckCircle color="success" />
+                          <CheckCircle color="success" sx={{ fontSize: { xs: 28, md: 24 } }} />
                         </Stack>
                       </Paper>
                     )}

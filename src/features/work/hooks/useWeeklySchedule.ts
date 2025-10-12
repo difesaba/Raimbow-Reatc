@@ -8,10 +8,50 @@ import {
   eachDayOfInterval,
   differenceInDays,
   min,
-  max
+  max,
+  parseISO,
+  startOfDay
 } from 'date-fns';
 import { WorkService } from '../services/work.service';
 import type { LotDetail } from '../interfaces/work.interfaces';
+
+/**
+ * 🔧 Extraer fecha limpia YYYY-MM-DD ignorando timezone
+ *
+ * Problema: El backend envía "2025-10-12T00:00:00.000Z" (UTC)
+ * y parseISO() lo convierte al timezone local, causando offset de días.
+ *
+ * Solución: Extraer solo los primeros 10 caracteres (YYYY-MM-DD)
+ * para evitar conversiones de timezone.
+ */
+const extractCleanDate = (dateString: string): string => {
+  // Si la fecha tiene formato ISO con hora (YYYY-MM-DDTHH:mm:ss...),
+  // extraer solo la parte de fecha
+  if (dateString.includes('T')) {
+    return dateString.split('T')[0];
+  }
+  // Si ya es YYYY-MM-DD, retornarla tal cual
+  return dateString.substring(0, 10);
+};
+
+/**
+ * 🗓️ Obtener fecha de inicio con prioridad correcta
+ * Prioridad: StartDate → InitialDate
+ *
+ * Nota: La fecha de fin se calcula automáticamente basándose en Days,
+ * por lo que no necesitamos una función getTaskEndDate aquí.
+ */
+const getTaskStartDate = (task: LotDetail): string | null => {
+  // Prioridad 1: StartDate
+  if (task.StartDate && task.StartDate.trim() !== '') {
+    return extractCleanDate(task.StartDate);
+  }
+  // Fallback: InitialDate
+  if (task.InitialDate && task.InitialDate.trim() !== '') {
+    return extractCleanDate(task.InitialDate);
+  }
+  return null;
+};
 
 /**
  * Tarea con información de posición en el grid
@@ -48,10 +88,13 @@ export const useWeeklySchedule = () => {
 
   /**
    * 📆 Calcular lunes y domingo de la semana actual
+   *
+   * IMPORTANTE: Usamos startOfDay() para normalizar las fechas a medianoche (00:00:00)
+   * Esto evita problemas de comparación con fechas que vienen del backend sin hora
    */
   const getWeekRange = useCallback((date: Date) => {
-    const monday = startOfWeek(date, { weekStartsOn: 1 }); // 1 = Lunes
-    const sunday = endOfWeek(date, { weekStartsOn: 1 });
+    const monday = startOfDay(startOfWeek(date, { weekStartsOn: 1 })); // 1 = Lunes
+    const sunday = startOfDay(endOfWeek(date, { weekStartsOn: 1 }));
 
     return {
       start: monday,
@@ -77,9 +120,12 @@ export const useWeeklySchedule = () => {
     const grouped = new Map<string, LotDetail[]>();
 
     tasks.forEach(task => {
-      // Usar InitialDate como la fecha de la tarea
-      if (task.InitialDate) {
-        const dateKey = format(new Date(task.InitialDate), 'yyyy-MM-dd');
+      // Usar fecha de inicio con prioridad: StartDate → InitialDate
+      // getTaskStartDate ya retorna la fecha limpia sin timezone
+      const startDate = getTaskStartDate(task);
+      if (startDate) {
+        // startDate ya está en formato YYYY-MM-DD limpio, usarlo directamente como key
+        const dateKey = startDate;
 
         if (!grouped.has(dateKey)) {
           grouped.set(dateKey, []);
@@ -105,12 +151,14 @@ export const useWeeklySchedule = () => {
     weekStart: Date,
     weekEnd: Date
   ): { gridColumnStart: number; gridColumnSpan: number } | null => {
-    if (!task.InitialDate) {
+    // Usar fecha de inicio con prioridad: StartDate → InitialDate
+    const startDate = getTaskStartDate(task);
+    if (!startDate) {
       return null;
     }
 
-    // Fecha de inicio de la tarea
-    const taskStart = new Date(task.InitialDate);
+    // Fecha de inicio de la tarea (normalizada a medianoche con parseISO)
+    const taskStart = startOfDay(parseISO(startDate));
 
     // Calcular fecha de fin basada en Days
     const taskDuration = task.Days || 1;
@@ -131,9 +179,15 @@ export const useWeeklySchedule = () => {
     // Calcular cuántas columnas ocupa (días visibles)
     const gridColumnSpan = differenceInDays(visibleEnd, visibleStart) + 1;
 
+    // 🚨 IMPORTANTE: Limitar gridColumnSpan para que no se extienda más allá de la semana
+    // La semana tiene 7 columnas (lunes-domingo), por lo que:
+    // gridColumnStart + gridColumnSpan - 1 debe ser <= 7
+    const maxSpan = 7 - gridColumnStart + 1;
+    const limitedGridColumnSpan = Math.min(gridColumnSpan, maxSpan);
+
     return {
       gridColumnStart,
-      gridColumnSpan
+      gridColumnSpan: limitedGridColumnSpan
     };
   }, []);
 
@@ -164,10 +218,11 @@ export const useWeeklySchedule = () => {
     });
 
     // Ordenar por fecha de inicio para mejor visualización
+    // getTaskStartDate ya retorna la fecha limpia sin timezone
     return tasksWithPositions.sort((a, b) => {
-      const dateA = new Date(a.InitialDate).getTime();
-      const dateB = new Date(b.InitialDate).getTime();
-      return dateA - dateB;
+      const dateA = getTaskStartDate(a) || '1900-01-01'; // Fallback para tareas sin fecha
+      const dateB = getTaskStartDate(b) || '1900-01-01';
+      return dateA.localeCompare(dateB); // Comparación alfabética de YYYY-MM-DD funciona perfectamente
     });
   }, [calculateTaskGridPosition]);
 
@@ -181,11 +236,6 @@ export const useWeeklySchedule = () => {
     try {
       const { startFormatted, endFormatted } = getWeekRange(date);
 
-      console.log('📅 Cargando tareas de la semana:', {
-        start: startFormatted,
-        end: endFormatted
-      });
-
       // Llamar al servicio con todos los filtros en -1 (todos)
       const response = await WorkService.getTasksByRange(
         startFormatted,
@@ -196,11 +246,9 @@ export const useWeeklySchedule = () => {
       );
 
       setTasks(response);
-      console.log(`✅ ${response.length} tareas cargadas para la semana`);
     } catch (err) {
       const error = err as Error;
       setError(error);
-      console.error('❌ Error al cargar tareas de la semana:', error.message);
       setTasks([]);
     } finally {
       setLoading(false);
@@ -213,7 +261,6 @@ export const useWeeklySchedule = () => {
   const goToPreviousWeek = useCallback(() => {
     const previousWeek = addWeeks(currentDate, -1);
     setCurrentDate(previousWeek);
-    console.log('⬅️ Navegando a semana anterior');
   }, [currentDate]);
 
   /**
@@ -222,7 +269,6 @@ export const useWeeklySchedule = () => {
   const goToNextWeek = useCallback(() => {
     const nextWeek = addWeeks(currentDate, 1);
     setCurrentDate(nextWeek);
-    console.log('➡️ Navegando a semana siguiente');
   }, [currentDate]);
 
   /**
@@ -230,7 +276,6 @@ export const useWeeklySchedule = () => {
    */
   const goToCurrentWeek = useCallback(() => {
     setCurrentDate(new Date());
-    console.log('🏠 Volviendo a semana actual');
   }, []);
 
   /**

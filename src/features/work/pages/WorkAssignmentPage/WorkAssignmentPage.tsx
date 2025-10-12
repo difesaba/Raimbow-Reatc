@@ -14,7 +14,9 @@ import {
   DialogActions,
   Button,
   CircularProgress,
-  Grid
+  Grid,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { WorkService } from '../../services/work.service';
 import { WorkAssignmentFilters } from '../../components/WorkAssignmentFilters';
@@ -46,6 +48,9 @@ interface WorkAssignment extends Work {
  * Main page for viewing and assigning work tasks to managers
  */
 export const WorkAssignmentPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
   // State management
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [works, setWorks] = useState<WorkAssignment[]>([]);
@@ -453,14 +458,14 @@ export const WorkAssignmentPage = () => {
   }, []);
 
   return (
-    <Container maxWidth="xl">
-      <Stack spacing={3} paddingY={3}>
+    <Container maxWidth="xl" sx={{ paddingX: { xs: 1, sm: 2, md: 3 } }}>
+      <Stack spacing={{ xs: 2, md: 3 }} paddingY={{ xs: 2, md: 3 }}>
         {/* Page Header */}
-        <Box>
-          <Typography variant="h4" gutterBottom>
+        <Box paddingX={{ xs: 1, md: 0 }}>
+          <Typography variant={isMobile ? 'h5' : 'h4'} gutterBottom>
             Asignación de Trabajo
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body2" color="text.secondary">
             Consulta las tareas programadas y asigna responsables de forma sencilla
           </Typography>
         </Box>
@@ -537,7 +542,7 @@ export const WorkAssignmentPage = () => {
         </Grid>
 
         {/* Main Content Paper */}
-        <Paper elevation={0}>
+        <Paper elevation={0} sx={{ padding: { xs: 0, md: 0 } }}>
           <Box>
             {/* Filters Section */}
             <WorkAssignmentFilters
@@ -553,7 +558,7 @@ export const WorkAssignmentPage = () => {
 
             {/* Error Alert */}
             {error && (
-              <Box margin={3}>
+              <Box margin={{ xs: 2, md: 3 }}>
                 <Alert severity="error" onClose={() => setError(null)}>
                   {error}
                 </Alert>
@@ -562,7 +567,7 @@ export const WorkAssignmentPage = () => {
 
             {/* Warning for unassigned works */}
             {!loading && stats.unassigned > 0 && (
-              <Box margin={3}>
+              <Box margin={{ xs: 2, md: 3 }}>
                 <Alert severity="warning">
                   Hay {stats.unassigned} trabajo{stats.unassigned > 1 ? 's' : ''} sin manager asignado.
                   Por favor, revisa y asigna los responsables correspondientes.
@@ -571,7 +576,7 @@ export const WorkAssignmentPage = () => {
             )}
 
             {/* Results Table */}
-            <Box padding={3}>
+            <Box padding={{ xs: 0, md: 3 }}>
               <WorkAssignmentTable
                 key={refreshKey}
                 works={getFilteredWorks()}
@@ -618,13 +623,14 @@ export const WorkAssignmentPage = () => {
           onClose={() => !deleting && setDeleteDialogOpen(false)}
           maxWidth="sm"
           fullWidth
+          fullScreen={isMobile}
         >
           <DialogTitle>
-            <Typography variant="h6" fontWeight={600}>
+            <Typography variant={isMobile ? 'subtitle1' : 'h6'} fontWeight={600}>
               ¿Eliminar tarea?
             </Typography>
           </DialogTitle>
-          <DialogContent>
+          <DialogContent sx={{ padding: { xs: 2, md: 3 } }}>
             <Stack spacing={2}>
               <Alert severity="warning">
                 Esta acción no se puede deshacer. ¿Estás seguro de eliminar esta tarea?
@@ -702,7 +708,14 @@ export const WorkAssignmentPage = () => {
               )}
             </Stack>
           </DialogContent>
-          <DialogActions sx={{ px: 3, py: 2 }}>
+          <DialogActions
+            sx={{
+              px: { xs: 2, md: 3 },
+              py: 2,
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 1, sm: 0 }
+            }}
+          >
             <Button
               onClick={() => {
                 setDeleteDialogOpen(false);
@@ -710,6 +723,7 @@ export const WorkAssignmentPage = () => {
               }}
               disabled={deleting}
               color="inherit"
+              fullWidth={isMobile}
             >
               Cancelar
             </Button>
@@ -719,6 +733,7 @@ export const WorkAssignmentPage = () => {
               color="error"
               variant="contained"
               startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : null}
+              fullWidth={isMobile}
             >
               {deleting ? 'Eliminando...' : 'Eliminar'}
             </Button>

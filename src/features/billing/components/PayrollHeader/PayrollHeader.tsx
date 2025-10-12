@@ -45,8 +45,14 @@ export const PayrollHeader: React.FC<PayrollHeaderProps> = ({
   }
 
   return (
-    <Stack spacing={2}>
-      <Typography variant="h5" fontWeight={600}>
+    <Stack spacing={{ xs: 1.5, sm: 2 }}>
+      <Typography
+        variant="h5"
+        fontWeight={600}
+        sx={{
+          fontSize: { xs: '1.25rem', sm: '1.5rem' }, // h6 size on mobile, h5 on desktop
+        }}
+      >
         Reporte de Nómina Semanal
       </Typography>
 
@@ -56,7 +62,7 @@ export const PayrollHeader: React.FC<PayrollHeaderProps> = ({
         alignItems="center"
         flexWrap="wrap"
         useFlexGap
-        sx={{ gap: 1.5 }}
+        sx={{ gap: { xs: 1, sm: 1.5 } }}
       >
         {/* Date Range Chip */}
         <Chip
@@ -65,6 +71,7 @@ export const PayrollHeader: React.FC<PayrollHeaderProps> = ({
           color="default"
           variant="outlined"
           size="medium"
+          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
         />
 
         {/* Total Payroll Chip */}
@@ -74,6 +81,7 @@ export const PayrollHeader: React.FC<PayrollHeaderProps> = ({
           color="success"
           variant="filled"
           size="medium"
+          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
         />
 
         {/* Employee Count Chip */}
@@ -83,6 +91,7 @@ export const PayrollHeader: React.FC<PayrollHeaderProps> = ({
           color="primary"
           variant="outlined"
           size="medium"
+          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
         />
 
         {/* Total Hours Chip */}
@@ -92,6 +101,7 @@ export const PayrollHeader: React.FC<PayrollHeaderProps> = ({
           color="secondary"
           variant="outlined"
           size="medium"
+          sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
         />
       </Stack>
     </Stack>

@@ -8,7 +8,9 @@ import {
   Typography,
   Tooltip,
   ToggleButtonGroup,
-  ToggleButton
+  ToggleButton,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -33,6 +35,8 @@ export const WorkAssignmentFilters = ({
   filterStatus,
   onFilterChange
 }: WorkAssignmentFiltersProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   // Navigate to previous day
@@ -76,36 +80,41 @@ export const WorkAssignmentFilters = ({
   };
 
   return (
-    <Box padding={3}>
-      <Stack spacing={2}>
+    <Box padding={{ xs: 1.5, md: 3 }}>
+      <Stack spacing={{ xs: 2, md: 2 }}>
         {/* First Row: Date Navigation and Search */}
         <Stack
-          direction="row"
+          direction={{ xs: 'column', md: 'row' }}
           spacing={2}
-          alignItems="center"
-          flexWrap="wrap"
+          alignItems={{ xs: 'stretch', md: 'center' }}
         >
           {/* Date Navigation Controls */}
-          <Stack direction="row" alignItems="center" spacing={1} flex={1}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={{ xs: 0.5, md: 1 }}
+            flex={{ md: 1 }}
+            justifyContent={{ xs: 'center', md: 'flex-start' }}
+          >
             {/* Previous Day */}
             <Tooltip title="Día anterior">
               <IconButton
                 onClick={handlePreviousDay}
                 disabled={loading}
                 color="primary"
+                size={isMobile ? 'small' : 'medium'}
               >
-                <NavigateBefore />
+                <NavigateBefore fontSize={isMobile ? 'medium' : 'large'} />
               </IconButton>
             </Tooltip>
 
             {/* Date Picker */}
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
               <DatePicker
-                label="Fecha de consulta"
+                label={isMobile ? '' : 'Fecha de consulta'}
                 value={selectedDate}
                 onChange={(newValue) => {
                   if (newValue) {
-                    // Convert to Date if it's a Dayjs object
                     const dateValue = newValue instanceof Date ? newValue : new Date(newValue.toString());
                     onDateChange(dateValue);
                   }
@@ -117,7 +126,12 @@ export const WorkAssignmentFilters = ({
                 format="dd/MM/yyyy"
                 slotProps={{
                   textField: {
-                    size: 'small'
+                    size: 'small',
+                    placeholder: isMobile ? 'dd/MM/yyyy' : undefined,
+                    sx: {
+                      minWidth: { xs: '130px', md: '200px' },
+                      maxWidth: { xs: '130px', md: '200px' }
+                    }
                   }
                 }}
               />
@@ -129,8 +143,9 @@ export const WorkAssignmentFilters = ({
                 onClick={handleNextDay}
                 disabled={loading}
                 color="primary"
+                size={isMobile ? 'small' : 'medium'}
               >
-                <NavigateNext />
+                <NavigateNext fontSize={isMobile ? 'medium' : 'large'} />
               </IconButton>
             </Tooltip>
 
@@ -141,27 +156,30 @@ export const WorkAssignmentFilters = ({
                   onClick={handleToday}
                   disabled={loading}
                   color="info"
+                  size={isMobile ? 'small' : 'medium'}
                 >
-                  <Today />
+                  <Today fontSize={isMobile ? 'small' : 'medium'} />
                 </IconButton>
               </Tooltip>
             )}
           </Stack>
 
-          {/* Display Selected Date */}
-          <Box flex={1} textAlign="center">
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              fontWeight={500}
-              textTransform="capitalize"
-            >
-              {formatDisplayDate(selectedDate)}
-            </Typography>
-          </Box>
+          {/* Display Selected Date - Hidden in mobile, shown in desktop */}
+          {!isMobile && (
+            <Box flex={1} textAlign="center">
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                fontWeight={500}
+                textTransform="capitalize"
+              >
+                {formatDisplayDate(selectedDate)}
+              </Typography>
+            </Box>
+          )}
 
           {/* Search Button */}
-          <Box minWidth={120}>
+          <Box width={{ xs: '100%', md: 'auto' }} minWidth={{ md: 140 }}>
             <Button
               variant="contained"
               color="primary"
@@ -176,15 +194,39 @@ export const WorkAssignmentFilters = ({
                   <Search />
                 )
               }
+              sx={{ height: { xs: '48px', md: '40px' } }}
             >
               {loading ? 'Consultando...' : 'Consultar'}
             </Button>
           </Box>
         </Stack>
 
+        {/* Display Selected Date - Mobile only */}
+        {isMobile && (
+          <Box textAlign="center" paddingY={1}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              fontWeight={500}
+              textTransform="capitalize"
+            >
+              {formatDisplayDate(selectedDate)}
+            </Typography>
+          </Box>
+        )}
+
         {/* Second Row: Status Filter */}
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          spacing={2}
+        >
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            fontWeight={500}
+            sx={{ display: { xs: 'none', sm: 'block' } }}
+          >
             Filtrar por estado:
           </Typography>
           <ToggleButtonGroup
@@ -197,17 +239,19 @@ export const WorkAssignmentFilters = ({
             }}
             size="small"
             disabled={loading}
+            fullWidth={isMobile}
+            orientation={isMobile ? 'vertical' : 'horizontal'}
           >
             <ToggleButton value="all" aria-label="mostrar todos">
-              <ViewList fontSize="small" sx={{ mr: 0.5 }} />
+              <ViewList fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
               Todos
             </ToggleButton>
             <ToggleButton value="pending" aria-label="mostrar pendientes">
-              <Warning fontSize="small" sx={{ mr: 0.5 }} />
+              <Warning fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
               Pendientes
             </ToggleButton>
             <ToggleButton value="assigned" aria-label="mostrar asignados">
-              <CheckCircle fontSize="small" sx={{ mr: 0.5 }} />
+              <CheckCircle fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
               Asignados
             </ToggleButton>
           </ToggleButtonGroup>

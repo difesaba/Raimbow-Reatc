@@ -208,16 +208,38 @@ export const UsersManagementPage = () => {
   };
 
   return (
-    <Container maxWidth="xl">
-      <Stack spacing={3} paddingY={3}>
-        {/* Page Header */}
+    <Container
+      maxWidth="xl"
+      sx={{
+        px: { xs: 2, sm: 3, md: 4 }
+      }}
+    >
+      <Stack spacing={{ xs: 2, sm: 3 }} paddingY={{ xs: 2, sm: 3 }}>
+        {/* Page Header - Responsive */}
         <Box>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-            <Box>
-              <Typography variant="h4" gutterBottom>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'stretch', sm: 'flex-start' }}
+            spacing={{ xs: 2, sm: 0 }}
+          >
+            <Box flex={1}>
+              <Typography
+                variant="h4"
+                gutterBottom
+                sx={{
+                  fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' }
+                }}
+              >
                 Administración de Usuarios
               </Typography>
-              <Typography variant="body1" color="text.secondary">
+              <Typography
+                variant="body1"
+                color="text.secondary"
+                sx={{
+                  fontSize: { xs: '0.875rem', sm: '1rem' }
+                }}
+              >
                 Gestiona los usuarios del sistema, sus roles y permisos
               </Typography>
             </Box>
@@ -226,22 +248,35 @@ export const UsersManagementPage = () => {
               color="primary"
               startIcon={<PersonAdd />}
               onClick={handleNewUser}
+              sx={{
+                width: { xs: '100%', sm: 'auto' },
+                minWidth: { sm: '160px' }
+              }}
             >
               Nuevo Usuario
             </Button>
           </Stack>
         </Box>
 
-        {/* Statistics Cards */}
-        <Grid container spacing={2}>
+        {/* Statistics Cards - Responsive */}
+        <Grid container spacing={{ xs: 1.5, sm: 2 }}>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={0}>
-              <Box padding={2}>
-                <Typography variant="caption" color="text.secondary" gutterBottom>
+              <Box padding={{ xs: 1.5, sm: 2 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ fontSize: { xs: '0.625rem', sm: '0.75rem' } }}
+                >
                   TOTAL DE USUARIOS
                 </Typography>
                 {statsLoaded ? (
-                  <Typography variant="h4" color="primary">
+                  <Typography
+                    variant="h4"
+                    color="primary"
+                    sx={{ fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' } }}
+                  >
                     {statistics.total}
                   </Typography>
                 ) : (
@@ -253,12 +288,21 @@ export const UsersManagementPage = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={0}>
-              <Box padding={2}>
-                <Typography variant="caption" color="text.secondary" gutterBottom>
+              <Box padding={{ xs: 1.5, sm: 2 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ fontSize: { xs: '0.625rem', sm: '0.75rem' } }}
+                >
                   USUARIOS ACTIVOS
                 </Typography>
                 {statsLoaded ? (
-                  <Typography variant="h4" color="success.main">
+                  <Typography
+                    variant="h4"
+                    color="success.main"
+                    sx={{ fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' } }}
+                  >
                     {statistics.active}
                   </Typography>
                 ) : (
@@ -270,12 +314,21 @@ export const UsersManagementPage = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={0}>
-              <Box padding={2}>
-                <Typography variant="caption" color="text.secondary" gutterBottom>
+              <Box padding={{ xs: 1.5, sm: 2 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ fontSize: { xs: '0.625rem', sm: '0.75rem' } }}
+                >
                   USUARIOS INACTIVOS
                 </Typography>
                 {statsLoaded ? (
-                  <Typography variant="h4" color="text.secondary">
+                  <Typography
+                    variant="h4"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' } }}
+                  >
                     {statistics.inactive}
                   </Typography>
                 ) : (
@@ -287,12 +340,21 @@ export const UsersManagementPage = () => {
 
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
             <Paper elevation={0}>
-              <Box padding={2}>
-                <Typography variant="caption" color="text.secondary" gutterBottom>
+              <Box padding={{ xs: 1.5, sm: 2 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  gutterBottom
+                  sx={{ fontSize: { xs: '0.625rem', sm: '0.75rem' } }}
+                >
                   ADMINISTRADORES
                 </Typography>
                 {statsLoaded ? (
-                  <Typography variant="h4" color="info.main">
+                  <Typography
+                    variant="h4"
+                    color="info.main"
+                    sx={{ fontSize: { xs: '1.75rem', sm: '2rem', md: '2.125rem' } }}
+                  >
                     {statistics.administrators}
                   </Typography>
                 ) : (
@@ -322,7 +384,7 @@ export const UsersManagementPage = () => {
             <Divider />
 
             {/* Users Table */}
-            <Box padding={3}>
+            <Box padding={{ xs: 2, sm: 3 }}>
               <UsersTable
                 users={filteredUsers}
                 loading={loading}
