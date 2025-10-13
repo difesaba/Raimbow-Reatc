@@ -24,7 +24,7 @@ import { WorkAssignmentTable } from '../../components/WorkAssignmentTable';
 import { TaskEditDialog } from '../../components/TaskEditDialog';
 import { TaskAuditDialog } from '../../components/TaskAuditDialog';
 import { TaskDetailDialog } from '../../components/TaskDetailDialog';
-import type { Work } from '../../interfaces/work.interfaces';
+import type { Work, NotificationResult } from '../../interfaces/work.interfaces';
 import type { TaskEditFormData } from '../../components/TaskEditDialog/TaskEditDialog.types';
 import type { FilterStatus } from '../../components/WorkAssignmentFilters/WorkAssignmentFilters.types';
 
@@ -109,17 +109,23 @@ export const WorkAssignmentPage = () => {
     return Array.from(uniqueSet).sort();
   };
 
-  // Filter works based on status and progress
+  // Filter works based on all filters
   const getFilteredWorks = (): WorkAssignment[] => {
     let filtered = works;
 
-    // 1. Filtrar por asignación (pending/assigned/all)
+    // 1. Filtrar por estado (all/pending/in_progress/completed)
     switch (filterStatus) {
       case 'pending':
-        filtered = filtered.filter(work => !work.UserRainbow);
+        // Pendientes: Sin asignar y no completadas
+        filtered = filtered.filter(work => !work.UserRainbow && work.Completed !== true);
         break;
-      case 'assigned':
-        filtered = filtered.filter(work => work.UserRainbow);
+      case 'in_progress':
+        // En progreso: Asignadas pero no completadas
+        filtered = filtered.filter(work => work.UserRainbow && work.Completed !== true);
+        break;
+      case 'completed':
+        // Completadas: Marcadas como completadas
+        filtered = filtered.filter(work => work.Completed === true);
         break;
       case 'all':
       default:
@@ -280,12 +286,13 @@ export const WorkAssignmentPage = () => {
   };
 
   // Handle save edit
-  const handleSaveEdit = async (data: TaskEditFormData) => {
-    if (!workToEdit) return;
+  const handleSaveEdit = async (data: TaskEditFormData): Promise<NotificationResult | undefined> => {
+    if (!workToEdit) return undefined;
 
     try {
       // Determinar si es CREATE o UPDATE basado en TaskId
       const isNewTask = !workToEdit.TaskId || workToEdit.TaskId === 0;
+      let notificationResult: NotificationResult | undefined;
 
       if (isNewTask) {
         // CREATE: La tarea no existe, crear nueva
@@ -307,10 +314,13 @@ export const WorkAssignmentPage = () => {
           User: 1
         });
 
-        const newTaskId = (createResponse as any).TaskId ||
-                          (createResponse as any).taskId ||
-                          (createResponse as any).data?.TaskId ||
-                          (createResponse as any).data?.taskId;
+        // Capturar notificationResult
+        notificationResult = createResponse.notification;
+        console.log('📱 Notification from CREATE response:', notificationResult);
+
+        const newTaskId = createResponse.data?.TaskId ||
+                          (createResponse as any).TaskId ||
+                          (createResponse as any).taskId;
 
         // Actualizar el work localmente
         setWorks(prev => prev.map(work => {
@@ -365,7 +375,11 @@ export const WorkAssignmentPage = () => {
           'Formato correcto': data.startDate?.includes('-') ? 'YYYY-MM-DD ✅' : '❌ Formato incorrecto'
         });
 
-        await WorkService.updateWork(updatePayload);
+        const updateResponse = await WorkService.updateWork(updatePayload);
+
+        // Capturar notificationResult
+        notificationResult = updateResponse.notification;
+        console.log('📱 Notification from UPDATE response:', notificationResult);
 
         const wasUnassigned = !workToEdit.ManagerName;
 
@@ -398,8 +412,15 @@ export const WorkAssignmentPage = () => {
       }
 
       setRefreshKey(prev => prev + 1);
-      setEditDialogOpen(false);
-      setWorkToEdit(null);
+
+      // Solo cerrar el diálogo si no hay notificationResult para mostrar
+      if (!notificationResult) {
+        setEditDialogOpen(false);
+        setWorkToEdit(null);
+      }
+
+      // Retornar el notificationResult para que TaskEditDialog lo muestre
+      return notificationResult;
     } catch (err: unknown) {
       console.error('❌ Error saving changes:', err);
       throw err; // Re-throw para que TaskEditDialog lo maneje
@@ -623,6 +644,7 @@ export const WorkAssignmentPage = () => {
           open={editDialogOpen}
           work={workToEdit}
           onClose={() => {
+            // Permitir cerrar el diálogo incluso si hay notificaciones para mostrar
             setEditDialogOpen(false);
             setWorkToEdit(null);
           }}

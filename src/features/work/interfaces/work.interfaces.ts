@@ -209,3 +209,48 @@ export interface ParsedSummary {
     new: unknown;
   };
 }
+
+/**
+ * 📱 NotificationChannel - Resultado de envío por canal (WhatsApp o SMS)
+ */
+export interface NotificationChannel {
+  success: boolean;
+  messageSid?: string;
+  error?: string;
+}
+
+/**
+ * 📲 NotificationResult - Resultado completo de notificaciones enviadas
+ * Incluido en las respuestas de creación/actualización de tareas
+ */
+export interface NotificationResult {
+  sent: boolean;
+  user?: string;
+  phone?: string;
+  whatsapp: NotificationChannel;
+  sms: NotificationChannel;
+  totalSent: number;
+  totalFailed: number;
+}
+
+/**
+ * ✅ CreateWorkResponse - Respuesta completa al crear un trabajo
+ * Incluye información de notificaciones enviadas
+ */
+export interface CreateWorkResponse {
+  ok: boolean;
+  msg: string;
+  data: Work;
+  notification?: NotificationResult;
+}
+
+/**
+ * ✅ UpdateWorkResponse - Respuesta completa al actualizar un trabajo
+ * Incluye información de notificaciones enviadas
+ */
+export interface UpdateWorkResponse {
+  ok: boolean;
+  msg: string;
+  data: Work;
+  notification?: NotificationResult;
+}

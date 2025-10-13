@@ -1,6 +1,5 @@
 import { apiService } from '../../../config/services/apiService';
 import type {
-  Work,
   WorkReport,
   WorkDay,
   LotDetail,
@@ -8,7 +7,9 @@ import type {
   UpdateWorkDTO,
   WorkReportFilters,
   DeleteWorkParams,
-  AuditResponse
+  AuditResponse,
+  CreateWorkResponse,
+  UpdateWorkResponse
 } from '../interfaces/work.interfaces';
 
 /**
@@ -330,10 +331,10 @@ export class WorkService {
    * }
    *
    * @param workData - Datos del nuevo trabajo
-   * @returns Trabajo creado
+   * @returns Respuesta completa con trabajo creado y notificaciones
    * @throws Error con mensaje descriptivo si la petición falla
    */
-  static async createWork(workData: CreateWorkDTO): Promise<Work> {
+  static async createWork(workData: CreateWorkDTO): Promise<CreateWorkResponse> {
     try {
       // 📝 Validaciones básicas
       if (!workData.LotId || workData.LotId <= 0) {
@@ -347,8 +348,18 @@ export class WorkService {
 
       const response = await apiService.post(this.BASE_PATH, workData);
 
-      console.log('✅ Work created successfully:', response.data);
-      return response.data;
+      // Normalizar respuesta - el backend devuelve: { ok, msg, data, notification }
+      const normalizedResponse: CreateWorkResponse = {
+        ok: response.data?.ok || true,
+        msg: response.data?.msg || 'Trabajo creado exitosamente',
+        data: response.data?.data || response.data,
+        notification: response.data?.notification
+      };
+
+      console.log('✅ Work created successfully:', normalizedResponse);
+      console.log('📱 Notification result:', normalizedResponse.notification);
+
+      return normalizedResponse;
     } catch (error: unknown) {
       const apiError = error as ApiError;
       const errorMessage = apiError.response?.data?.message ||
@@ -381,10 +392,10 @@ export class WorkService {
    * }
    *
    * @param workData - Datos actualizados del trabajo
-   * @returns Trabajo actualizado
+   * @returns Respuesta completa con trabajo actualizado y notificaciones
    * @throws Error con mensaje descriptivo si la petición falla
    */
-  static async updateWork(workData: UpdateWorkDTO): Promise<Work> {
+  static async updateWork(workData: UpdateWorkDTO): Promise<UpdateWorkResponse> {
     try {
       // 📝 Validaciones básicas
       if (!workData.TaskId || workData.TaskId <= 0) {
@@ -398,8 +409,18 @@ export class WorkService {
 
       const response = await apiService.put(this.BASE_PATH, workData);
 
-      console.log('✅ Work updated successfully:', response.data);
-      return response.data;
+      // Normalizar respuesta - el backend devuelve: { ok, msg, data, notification }
+      const normalizedResponse: UpdateWorkResponse = {
+        ok: response.data?.ok || true,
+        msg: response.data?.msg || 'Trabajo actualizado exitosamente',
+        data: response.data?.data || response.data,
+        notification: response.data?.notification
+      };
+
+      console.log('✅ Work updated successfully:', normalizedResponse);
+      console.log('📱 Notification result:', normalizedResponse.notification);
+
+      return normalizedResponse;
     } catch (error: unknown) {
       const apiError = error as ApiError;
       const errorMessage = apiError.response?.data?.message ||

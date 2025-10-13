@@ -161,6 +161,7 @@ export const ChangePasswordModal = ({
     try {
       const passwordData: PasswordChangeData = {
         UserId: user.UserId,
+        user: user, // Enviar el usuario completo con todos sus datos actuales
         currentPassword: formData.currentPassword || undefined,
         newPassword: formData.newPassword,
         confirmPassword: formData.confirmPassword

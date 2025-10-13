@@ -1,4 +1,5 @@
 import type { WorkAssignment } from '../WorkAssignmentTable/WorkAssignmentTable.types';
+import type { NotificationResult } from '../../interfaces/work.interfaces';
 
 /**
  * Manager interface for task assignment
@@ -44,6 +45,7 @@ export interface TaskEditDialogProps {
   /**
    * Callback when save button is clicked
    * Receives the form data with manager, dates, and completed status
+   * Returns notification result (optional) indicating if messages were sent
    */
-  onConfirm: (data: TaskEditFormData) => Promise<void>;
+  onConfirm: (data: TaskEditFormData) => Promise<NotificationResult | undefined>;
 }

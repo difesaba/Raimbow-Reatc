@@ -41,6 +41,7 @@ import { es } from 'date-fns/locale';
 import { UserService } from '../../../users/services/user.service';
 import type { User } from '../../../users/interfaces/user.interfaces';
 import type { TaskEditDialogProps, Manager } from './TaskEditDialog.types';
+import type { NotificationResult } from '../../interfaces/work.interfaces';
 
 /**
  * Helper function to map User to Manager interface
@@ -81,6 +82,9 @@ export const TaskEditDialog = ({
   // Loading & Error state
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Notification state
+  const [notificationResult, setNotificationResult] = useState<NotificationResult | null>(null);
 
   // Detect if this is first assignment or edit
   const isFirstAssignment = !work?.TaskId || work?.TaskId === 0;
@@ -235,6 +239,7 @@ export const TaskEditDialog = ({
     setCompleted(false);
     setObservations('');
     setError(null);
+    setNotificationResult(null);
   };
 
   /**
@@ -279,17 +284,29 @@ export const TaskEditDialog = ({
 
     setSaving(true);
     setError(null);
+    setNotificationResult(null);
 
     try {
       // For first assignment, dates and completed are optional
-      await onConfirm({
+      const notification = await onConfirm({
         manager: selectedManager!,
         startDate: startDate ? formatDate(startDate) : '',
         endDate: endDate ? formatDate(endDate) : '',
         completed: isFirstAssignment ? false : completed,
         observations: observations
       });
-      resetForm();
+
+      // Store notification result
+      if (notification) {
+        setNotificationResult(notification);
+        console.log('📱 Notification received in dialog:', notification);
+      }
+
+      // Don't close dialog immediately if we have notifications to show
+      // User can see the result and close manually
+      if (!notification) {
+        resetForm();
+      }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Error al guardar los cambios';
       setError(errorMessage);
@@ -425,6 +442,55 @@ export const TaskEditDialog = ({
             </Alert>
           )}
 
+          {/* Notification Result Alert */}
+          {notificationResult && (
+            <Alert
+              severity={notificationResult.totalFailed > 0 ? "warning" : "success"}
+              onClose={() => setNotificationResult(null)}
+            >
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                Estado de las Notificaciones
+              </Typography>
+
+              {notificationResult.user && (
+                <Typography variant="body2" gutterBottom>
+                  <strong>Usuario:</strong> {notificationResult.user}
+                  {notificationResult.phone && ` (${notificationResult.phone})`}
+                </Typography>
+              )}
+
+              <Stack spacing={1} mt={1}>
+                {/* WhatsApp Status */}
+                <Box>
+                  <Typography variant="body2" component="span">
+                    {notificationResult.whatsapp.success ? '✅' : '❌'} <strong>WhatsApp:</strong>{' '}
+                    {notificationResult.whatsapp.success
+                      ? `Enviado exitosamente ${notificationResult.whatsapp.messageSid ? `(${notificationResult.whatsapp.messageSid})` : ''}`
+                      : `Falló ${notificationResult.whatsapp.error ? `- ${notificationResult.whatsapp.error}` : ''}`
+                    }
+                  </Typography>
+                </Box>
+
+                {/* SMS Status */}
+                <Box>
+                  <Typography variant="body2" component="span">
+                    {notificationResult.sms.success ? '✅' : '❌'} <strong>SMS:</strong>{' '}
+                    {notificationResult.sms.success
+                      ? `Enviado exitosamente ${notificationResult.sms.messageSid ? `(${notificationResult.sms.messageSid})` : ''}`
+                      : `Falló ${notificationResult.sms.error ? `- ${notificationResult.sms.error}` : ''}`
+                    }
+                  </Typography>
+                </Box>
+
+                {/* Summary */}
+                <Divider sx={{ my: 0.5 }} />
+                <Typography variant="body2" fontWeight={500}>
+                  <strong>Resumen:</strong> {notificationResult.totalSent} enviado{notificationResult.totalSent !== 1 ? 's' : ''}, {notificationResult.totalFailed} fallido{notificationResult.totalFailed !== 1 ? 's' : ''}
+                </Typography>
+              </Stack>
+            </Alert>
+          )}
+
           {/* Manager Selection */}
           <Box>
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
@@ -460,26 +526,29 @@ export const TaskEditDialog = ({
                     required
                   />
                 )}
-                renderOption={(props, option) => (
-                  <Box component="li" {...props}>
-                    <Stack direction="row" alignItems="center" spacing={2} width="100%" py={0.5}>
-                      <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
-                        {option.name.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box flex={1}>
-                        <Typography variant="body2" fontWeight={500}>
-                          {option.name}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {option.email}
-                        </Typography>
-                      </Box>
-                      {option.available && (
-                        <Chip label="Disponible" size="small" color="success" variant="outlined" />
-                      )}
-                    </Stack>
-                  </Box>
-                )}
+                renderOption={(props, option) => {
+                  const { key, ...otherProps } = props;
+                  return (
+                    <Box component="li" key={key} {...otherProps}>
+                      <Stack direction="row" alignItems="center" spacing={2} width="100%" py={0.5}>
+                        <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36 }}>
+                          {option.name.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box flex={1}>
+                          <Typography variant="body2" fontWeight={500}>
+                            {option.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {option.email}
+                          </Typography>
+                        </Box>
+                        {option.available && (
+                          <Chip label="Disponible" size="small" color="success" variant="outlined" />
+                        )}
+                      </Stack>
+                    </Box>
+                  );
+                }}
               />
             )}
           </Box>

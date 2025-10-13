@@ -28,7 +28,8 @@ import {
   CheckCircle,
   Warning,
   ViewList,
-  FilterList
+  FilterList,
+  HourglassEmpty
 } from '@mui/icons-material';
 import { es } from 'date-fns/locale';
 import type { WorkAssignmentFiltersProps, FilterStatus } from './WorkAssignmentFilters.types';
@@ -224,73 +225,66 @@ export const WorkAssignmentFilters = ({
           </Box>
         )}
 
-        {/* Second Row: Status Filter */}
+        {/* Second Row: Status Filter and Progress/WorkType Filter */}
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ xs: 'stretch', sm: 'center' }}
           spacing={2}
         >
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            fontWeight={500}
-            sx={{ display: { xs: 'none', sm: 'block' } }}
-          >
-            Filtrar por estado:
-          </Typography>
-          <ToggleButtonGroup
-            value={filterStatus}
-            exclusive
-            onChange={(_event, newFilter: FilterStatus) => {
-              if (newFilter !== null) {
-                onFilterChange(newFilter);
-              }
-            }}
-            size="small"
-            disabled={loading}
-            fullWidth={isMobile}
-            orientation={isMobile ? 'vertical' : 'horizontal'}
-          >
-            <ToggleButton value="all" aria-label="mostrar todos">
-              <ViewList fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
-              Todos
-            </ToggleButton>
-            <ToggleButton value="pending" aria-label="mostrar pendientes">
-              <Warning fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
-              Pendientes
-            </ToggleButton>
-            <ToggleButton value="assigned" aria-label="mostrar asignados">
-              <CheckCircle fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
-              Asignados
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Stack>
+          {/* Status Filter */}
+          <Box flex={1}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              fontWeight={500}
+              sx={{ display: { xs: 'none', sm: 'block' }, mb: 1 }}
+            >
+              Filtrar por estado:
+            </Typography>
+            <ToggleButtonGroup
+              value={filterStatus}
+              exclusive
+              onChange={(_event, newFilter: FilterStatus) => {
+                if (newFilter !== null) {
+                  onFilterChange(newFilter);
+                }
+              }}
+              size="small"
+              disabled={loading}
+              fullWidth={isMobile}
+              orientation={isMobile ? 'vertical' : 'horizontal'}
+            >
+              <ToggleButton value="all" aria-label="mostrar todos">
+                <ViewList fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
+                Todos
+              </ToggleButton>
+              <ToggleButton value="pending" aria-label="mostrar pendientes">
+                <Warning fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
+                Pendientes
+              </ToggleButton>
+              <ToggleButton value="in_progress" aria-label="mostrar en progreso">
+                <HourglassEmpty fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
+                En progreso
+              </ToggleButton>
+              <ToggleButton value="completed" aria-label="mostrar completadas">
+                <CheckCircle fontSize="small" sx={{ mr: { xs: 1, sm: 0.5 } }} />
+                Completadas
+              </ToggleButton>
+            </ToggleButtonGroup>
+          </Box>
 
-        {/* Third Row: Progress/WorkType Filter */}
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          alignItems={{ xs: 'stretch', sm: 'center' }}
-          spacing={2}
-        >
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            fontWeight={500}
-            sx={{ display: { xs: 'none', sm: 'block' }, minWidth: '120px' }}
-          >
-            Tipo de trabajo:
-          </Typography>
-          <FormControl fullWidth size="small" disabled={loading}>
+          {/* Progress/WorkType Filter */}
+          <FormControl size="small" disabled={loading} sx={{ flex: { xs: 1, sm: 0.4 }, minWidth: { sm: 250 } }}>
             <InputLabel id="progress-filter-label">
               <Stack direction="row" spacing={0.5} alignItems="center">
                 <FilterList fontSize="small" />
-                <span>Filtrar por tipo</span>
+                <span>Tipo de trabajo</span>
               </Stack>
             </InputLabel>
             <Select
               labelId="progress-filter-label"
               value={progressFilter}
-              label="Filtrar por tipo"
+              label="Tipo de trabajo"
               onChange={(e) => onProgressFilterChange(e.target.value)}
               renderValue={(selected) => {
                 if (selected === 'all') {

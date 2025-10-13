@@ -78,13 +78,13 @@ export const useAuth = (): UseAuthReturn => {
     (role: string): boolean => {
       if (!user) return false;
 
-      // Check both 'role' and 'rol' fields for compatibility
-      const userRole = user.role || user.rol;
+      // Check multiple possible role field names for compatibility
+      const userRole = user.role || user.rol || (user as any).RoleName;
       if (!userRole) return false;
 
       // Exact match or check if user has admin role (admin has all permissions)
       return userRole.toLowerCase() === role.toLowerCase() ||
-             userRole.toLowerCase() === 'ADMIN';
+             userRole.toLowerCase() === 'admin';
     },
     [user]
   );
@@ -97,8 +97,8 @@ export const useAuth = (): UseAuthReturn => {
       if (!user) return false;
 
       // Admin has all permissions
-      const userRole = user.role || user.rol;
-      if (userRole?.toLowerCase() === 'ADMIN') return true;
+      const userRole = user.role || user.rol || (user as any).RoleName;
+      if (userRole?.toLowerCase() === 'admin') return true;
 
       // Check permissions array if exists
       if (user.permissions && Array.isArray(user.permissions)) {

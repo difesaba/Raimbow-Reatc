@@ -16,6 +16,7 @@ export interface ChangePasswordModalProps {
  */
 export interface PasswordChangeData {
   UserId: number;
+  user: User; // Usuario completo con todos sus datos actuales
   currentPassword?: string;
   newPassword: string;
   confirmPassword: string;

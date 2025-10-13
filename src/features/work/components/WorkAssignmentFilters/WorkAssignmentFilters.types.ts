@@ -1,7 +1,7 @@
 /**
  * Filter status type
  */
-export type FilterStatus = 'all' | 'pending' | 'assigned';
+export type FilterStatus = 'all' | 'pending' | 'in_progress' | 'completed';
 
 /**
  * Props for WorkAssignmentFilters component

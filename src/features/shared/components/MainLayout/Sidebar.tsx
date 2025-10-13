@@ -15,9 +15,7 @@ import {
 import {
   Dashboard as DashboardIcon,
   Engineering as EngineeringIcon,
-  Description as DescriptionIcon,
   Receipt as ReceiptIcon,
-  Analytics as AnalyticsIcon,
   Today as TodayIcon,
   PersonSearch as PersonSearchIcon,
   Apartment as ApartmentIcon,
@@ -76,12 +74,6 @@ const navItems: NavItem[] = [
     ],
   },
   {
-    text: 'Contratos',
-    icon: <DescriptionIcon />,
-    path: '/contratos',
-    disabled: true, // TODO: Habilitar cuando esté implementado
-  },
-  {
     text: 'Facturación',
     icon: <ReceiptIcon />,
     children: [
@@ -96,12 +88,6 @@ const navItems: NavItem[] = [
         path: '/facturacion/reporte',
       },
     ],
-  },
-  {
-    text: 'Reportes',
-    icon: <AnalyticsIcon />,
-    path: '/reportes',
-    disabled: true, // TODO: Habilitar cuando esté implementado
   },
   {
     text: 'Usuarios',
@@ -189,13 +175,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     borderRadius: 2,
                     py: 1,
                     '&.Mui-selected': {
-                      bgcolor: 'primary.light',
-                      color: 'primary.main',
+                      bgcolor: 'primary.main',
+                      color: 'white',
                       '&:hover': {
-                        bgcolor: 'primary.light',
+                        bgcolor: 'primary.dark',
                       },
                       '& .MuiListItemIcon-root': {
-                        color: 'primary.main',
+                        color: 'white',
                       },
                     },
                     '&:hover': {
@@ -209,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <ListItemIcon
                     sx={{
                       minWidth: 36,
-                      color: isActive ? 'primary.main' : 'text.secondary',
+                      color: isActive ? 'white' : 'text.secondary',
                     }}
                   >
                     {item.icon}
@@ -251,13 +237,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                               py: 0.75,
                               pl: 6,
                               '&.Mui-selected': {
-                                bgcolor: 'primary.light',
-                                color: 'primary.main',
+                                bgcolor: 'primary.main',
+                                color: 'white',
                                 '&:hover': {
-                                  bgcolor: 'primary.light',
+                                  bgcolor: 'primary.dark',
                                 },
                                 '& .MuiListItemIcon-root': {
-                                  color: 'primary.main',
+                                  color: 'white',
                                 },
                               },
                               '&:hover': {
@@ -268,7 +254,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             <ListItemIcon
                               sx={{
                                 minWidth: 32,
-                                color: isChildActive ? 'primary.main' : 'text.secondary',
+                                color: isChildActive ? 'white' : 'text.secondary',
                               }}
                             >
                               {child.icon}

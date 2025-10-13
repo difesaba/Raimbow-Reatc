@@ -1,7 +1,7 @@
 // src/features/work/pages/WeeklySchedulePage/hooks/useWorkActions.ts
 import { useState, useCallback } from 'react';
 import { WorkService } from '../../../services/work.service';
-import type { LotDetail } from '../../../interfaces/work.interfaces';
+import type { LotDetail, NotificationResult } from '../../../interfaces/work.interfaces';
 import type { Manager } from '../../../components/AssignManagerDialog/AssignManagerDialog.types';
 import { getStartDate, getEndDate, formatDateToISO } from '../utils/dateHelpers';
 import { hasValidTaskId } from '../utils/taskMappers';
@@ -13,6 +13,7 @@ import { hasValidTaskId } from '../utils/taskMappers';
 export const useWorkActions = (onSuccess: () => void) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastNotification, setLastNotification] = useState<NotificationResult | null>(null);
 
   // TODO: Obtener user del contexto de autenticación
   const currentUserId = 1; // Temporal, debería venir del auth context
@@ -73,11 +74,12 @@ export const useWorkActions = (onSuccess: () => void) => {
 
     setLoading(true);
     setError(null);
+    setLastNotification(null);
 
     try {
       console.log('👤 Assigning manager:', { TaskId: task.TaskId, ManagerId: manager.id });
 
-      await WorkService.updateWork({
+      const updateResponse = await WorkService.updateWork({
         TaskId: task.TaskId!,
         UserRainbow: manager.id,
         User: currentUserId,
@@ -86,6 +88,12 @@ export const useWorkActions = (onSuccess: () => void) => {
         Completed: task.IsComplete === 1,
         Obs: task.Obs || ''
       });
+
+      // Capturar y almacenar notificationResult
+      if (updateResponse.notification) {
+        setLastNotification(updateResponse.notification);
+        console.log('📱 Notification from assignManager:', updateResponse.notification);
+      }
 
       console.log('✅ Manager assigned successfully');
       onSuccess();
@@ -153,12 +161,21 @@ export const useWorkActions = (onSuccess: () => void) => {
     setError(null);
   }, []);
 
+  /**
+   * 🧹 Limpiar notificación
+   */
+  const clearNotification = useCallback(() => {
+    setLastNotification(null);
+  }, []);
+
   return {
     loading,
     error,
+    lastNotification,
     toggleCompleted,
     assignManager,
     updateDates,
-    clearError
+    clearError,
+    clearNotification
   };
 };

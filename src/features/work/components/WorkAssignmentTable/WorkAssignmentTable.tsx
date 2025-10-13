@@ -552,32 +552,11 @@ export const WorkAssignmentTable = ({
       >
         {selectedWork?.TaskId && selectedWork.TaskId > 0 ? (
           <>
-            <MenuItem onClick={handleViewDetails}>
-              <ListItemIcon>
-                <Info fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Ver detalles completos" />
-            </MenuItem>
-
-            <Divider />
-
-            <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-              <ListItemIcon>
-                <Delete fontSize="small" color="error" />
-              </ListItemIcon>
-              <ListItemText primary="Eliminar tarea" />
-            </MenuItem>
-          </>
-        ) : (
-          <>
-            <MenuItem
-              onClick={handleEdit}
-              disabled
-            >
+            <MenuItem onClick={handleEdit}>
               <ListItemIcon>
                 <Edit fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary="Editar" />
+              <ListItemText primary="Editar tarea" />
             </MenuItem>
 
             <MenuItem onClick={handleViewDetails}>
@@ -592,6 +571,24 @@ export const WorkAssignmentTable = ({
                 <History fontSize="small" />
               </ListItemIcon>
               <ListItemText primary="Ver auditoría" />
+            </MenuItem>
+
+            <Divider />
+
+            <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
+              <ListItemIcon>
+                <Delete fontSize="small" color="error" />
+              </ListItemIcon>
+              <ListItemText primary="Eliminar tarea" />
+            </MenuItem>
+          </>
+        ) : (
+          <>
+            <MenuItem onClick={handleViewDetails}>
+              <ListItemIcon>
+                <Info fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Ver detalles completos" />
             </MenuItem>
           </>
         )}

@@ -70,10 +70,12 @@ export interface TaskWithGridPosition extends LotDetail {
  * - ✅ Agrupa tareas por día
  * - ✅ Navegación entre semanas
  * - ✅ Manejo de estados de carga y error
+ * - ✅ Filtrado por subdivisión opcional
  *
+ * @param subdivisionId - ID de subdivisión para filtrar (opcional, -1 = todas)
  * @returns Objeto con datos, estados y funciones de control
  */
-export const useWeeklySchedule = () => {
+export const useWeeklySchedule = (subdivisionId?: number) => {
   // 📅 Fecha base de la semana (puede cambiar al navegar)
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -236,11 +238,14 @@ export const useWeeklySchedule = () => {
     try {
       const { startFormatted, endFormatted } = getWeekRange(date);
 
-      // Llamar al servicio con todos los filtros en -1 (todos)
+      // Determinar el filtro de subdivisión
+      const subFilter = subdivisionId !== undefined ? subdivisionId : -1;
+
+      // Llamar al servicio con filtros
       const response = await WorkService.getTasksByRange(
         startFormatted,
         endFormatted,
-        -1, // sub: todas las subdivisiones
+        subFilter, // sub: subdivisión seleccionada o todas (-1)
         '-1', // lot: todos los lotes
         -1  // status: todos los estados
       );
@@ -253,7 +258,7 @@ export const useWeeklySchedule = () => {
     } finally {
       setLoading(false);
     }
-  }, [getWeekRange]);
+  }, [getWeekRange, subdivisionId]);
 
   /**
    * ⬅️ Ir a la semana anterior

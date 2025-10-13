@@ -38,5 +38,16 @@ export const mapLotDetailToWorkAssignment = (lotDetail: LotDetail): WorkAssignme
  * @returns true si la tarea tiene un TaskId válido
  */
 export const hasValidTaskId = (task: LotDetail | null): boolean => {
-  return !!(task?.TaskId && task.TaskId > 0);
+  if (!task) return false;
+
+  const taskId = task.TaskId;
+
+  // Manejar null o undefined
+  if (taskId === null || taskId === undefined) return false;
+
+  // Convertir a número si es string
+  const numericId = typeof taskId === 'string' ? parseInt(taskId, 10) : taskId;
+
+  // Validar que sea un número válido mayor a 0
+  return !isNaN(numericId) && numericId > 0;
 };

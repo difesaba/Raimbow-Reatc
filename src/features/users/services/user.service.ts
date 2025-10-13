@@ -229,14 +229,16 @@ export class UserService {
    * 🔑 Cambiar contraseña de usuario
    * PUT /api/user/:id
    *
-   * Nota: Usa el mismo endpoint de actualización, enviando todos los campos en -1 excepto password
+   * Nota: Usa el mismo endpoint de actualización, enviando todos los campos del usuario
+   * excepto el password que se reemplaza con el nuevo valor
    *
-   * @param passwordData - Datos del cambio de contraseña
+   * @param passwordData - Datos del cambio de contraseña (incluye usuario completo)
    * @returns true si el cambio fue exitoso
    * @throws Error con mensaje descriptivo si la petición falla
    */
   static async changePassword(passwordData: {
     UserId: number;
+    user: User;
     currentPassword?: string;
     newPassword: string;
     confirmPassword: string;
@@ -252,26 +254,31 @@ export class UserService {
       if (passwordData.newPassword !== passwordData.confirmPassword) {
         throw new Error('Las contraseñas no coinciden');
       }
+      if (!passwordData.user) {
+        throw new Error('Los datos del usuario son requeridos');
+      }
 
       console.log('🔑 Changing password for user:', { userId: passwordData.UserId });
 
-      // Construir payload con todos los campos en -1 excepto password
-      // Esto indica al backend que solo debe actualizar la contraseña
+      const { user } = passwordData;
+
+      // Construir payload con todos los valores reales del usuario
+      // Solo cambiamos el password, el resto mantiene sus valores actuales
       const payload = {
-        firstName: '-1',
-        lastName: '-1',
-        email: '-1',
-        password: passwordData.newPassword,
-        role: -1,
-        company: '-1',
-        salary: -1,
-        discount: -1,
-        status: -1,
-        isAdmin: false,
-        isRainbow: false,
-        leader: false,
-        img: '-1',
-        whatsapp: '-1'
+        firstName: this.capitalize(user.FirstName),
+        lastName: this.capitalize(user.LastName),
+        email: user.Email,
+        password: passwordData.newPassword, // ⭐ Solo este campo cambia
+        role: user.RoleId,
+        company: user.Company,
+        salary: user.Salary,
+        discount: user.DiscountHour || 0,
+        status: user.Status,
+        isAdmin: user.IsAdmin,
+        isRainbow: user.isRainbow,
+        leader: user.Leader,
+        img: user.Img || '',
+        whatsapp: this.cleanPhoneNumber(user.WhatsApp || '')
       };
 
       await apiService.put(`${this.BASE_PATH}/${passwordData.UserId}`, payload);
