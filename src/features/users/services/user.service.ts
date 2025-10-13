@@ -227,7 +227,9 @@ export class UserService {
 
   /**
    * 🔑 Cambiar contraseña de usuario
-   * PUT /api/user/:id/password
+   * PUT /api/user/:id
+   *
+   * Nota: Usa el mismo endpoint de actualización, enviando todos los campos en -1 excepto password
    *
    * @param passwordData - Datos del cambio de contraseña
    * @returns true si el cambio fue exitoso
@@ -253,10 +255,26 @@ export class UserService {
 
       console.log('🔑 Changing password for user:', { userId: passwordData.UserId });
 
-      await apiService.put(`${this.BASE_PATH}/${passwordData.UserId}/password`, {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
+      // Construir payload con todos los campos en -1 excepto password
+      // Esto indica al backend que solo debe actualizar la contraseña
+      const payload = {
+        firstName: '-1',
+        lastName: '-1',
+        email: '-1',
+        password: passwordData.newPassword,
+        role: -1,
+        company: '-1',
+        salary: -1,
+        discount: -1,
+        status: -1,
+        isAdmin: false,
+        isRainbow: false,
+        leader: false,
+        img: '-1',
+        whatsapp: '-1'
+      };
+
+      await apiService.put(`${this.BASE_PATH}/${passwordData.UserId}`, payload);
 
       console.log('✅ Password changed successfully');
       return true;
@@ -266,7 +284,7 @@ export class UserService {
                           `Error al cambiar contraseña del usuario ${passwordData.UserId}`;
 
       console.error('❌ Error changing password:', {
-        endpoint: `${this.BASE_PATH}/${passwordData.UserId}/password`,
+        endpoint: `${this.BASE_PATH}/${passwordData.UserId}`,
         userId: passwordData.UserId,
         error: errorMessage,
         status: error.response?.status

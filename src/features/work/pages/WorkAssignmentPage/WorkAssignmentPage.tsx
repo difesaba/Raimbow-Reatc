@@ -60,6 +60,7 @@ export const WorkAssignmentPage = () => {
 
   // Filter state
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
+  const [progressFilter, setProgressFilter] = useState<string>('all');
 
   // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -97,17 +98,41 @@ export const WorkAssignmentPage = () => {
     return `${year}-${month}-${day}`;
   };
 
-  // Filter works based on status
+  // Get unique progress types from current works
+  const getUniqueProgress = (): string[] => {
+    const uniqueSet = new Set<string>();
+    works.forEach(work => {
+      if (work.WorkName) {
+        uniqueSet.add(work.WorkName);
+      }
+    });
+    return Array.from(uniqueSet).sort();
+  };
+
+  // Filter works based on status and progress
   const getFilteredWorks = (): WorkAssignment[] => {
+    let filtered = works;
+
+    // 1. Filtrar por asignación (pending/assigned/all)
     switch (filterStatus) {
       case 'pending':
-        return works.filter(work => !work.UserRainbow);
+        filtered = filtered.filter(work => !work.UserRainbow);
+        break;
       case 'assigned':
-        return works.filter(work => work.UserRainbow);
+        filtered = filtered.filter(work => work.UserRainbow);
+        break;
       case 'all':
       default:
-        return works;
+        // No filtrar
+        break;
     }
+
+    // 2. Filtrar por tipo de trabajo (Progress/WorkName)
+    if (progressFilter !== 'all') {
+      filtered = filtered.filter(work => work.WorkName === progressFilter);
+    }
+
+    return filtered;
   };
 
   // Handle filter change
@@ -552,6 +577,9 @@ export const WorkAssignmentPage = () => {
               loading={loading}
               filterStatus={filterStatus}
               onFilterChange={handleFilterChange}
+              progressFilter={progressFilter}
+              onProgressFilterChange={setProgressFilter}
+              availableProgress={getUniqueProgress()}
             />
 
             <Divider />

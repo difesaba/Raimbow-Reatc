@@ -10,7 +10,12 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   useMediaQuery,
-  useTheme
+  useTheme,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -22,7 +27,8 @@ import {
   NavigateNext,
   CheckCircle,
   Warning,
-  ViewList
+  ViewList,
+  FilterList
 } from '@mui/icons-material';
 import { es } from 'date-fns/locale';
 import type { WorkAssignmentFiltersProps, FilterStatus } from './WorkAssignmentFilters.types';
@@ -33,7 +39,10 @@ export const WorkAssignmentFilters = ({
   onSearch,
   loading,
   filterStatus,
-  onFilterChange
+  onFilterChange,
+  progressFilter,
+  onProgressFilterChange,
+  availableProgress
 }: WorkAssignmentFiltersProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -255,6 +264,79 @@ export const WorkAssignmentFilters = ({
               Asignados
             </ToggleButton>
           </ToggleButtonGroup>
+        </Stack>
+
+        {/* Third Row: Progress/WorkType Filter */}
+        <Stack
+          direction={{ xs: 'column', sm: 'row' }}
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          spacing={2}
+        >
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            fontWeight={500}
+            sx={{ display: { xs: 'none', sm: 'block' }, minWidth: '120px' }}
+          >
+            Tipo de trabajo:
+          </Typography>
+          <FormControl fullWidth size="small" disabled={loading}>
+            <InputLabel id="progress-filter-label">
+              <Stack direction="row" spacing={0.5} alignItems="center">
+                <FilterList fontSize="small" />
+                <span>Filtrar por tipo</span>
+              </Stack>
+            </InputLabel>
+            <Select
+              labelId="progress-filter-label"
+              value={progressFilter}
+              label="Filtrar por tipo"
+              onChange={(e) => onProgressFilterChange(e.target.value)}
+              renderValue={(selected) => {
+                if (selected === 'all') {
+                  return (
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="body2">Todos los tipos</Typography>
+                      <Chip
+                        label={availableProgress.length}
+                        size="small"
+                        color="primary"
+                        sx={{ height: 20, fontSize: '0.7rem' }}
+                      />
+                    </Stack>
+                  );
+                }
+                return selected;
+              }}
+            >
+              <MenuItem value="all">
+                <Stack direction="row" spacing={1} alignItems="center" width="100%">
+                  <ViewList fontSize="small" color="action" />
+                  <Typography variant="body2">Todos los tipos</Typography>
+                  <Box flex={1} />
+                  <Chip
+                    label={availableProgress.length}
+                    size="small"
+                    color="primary"
+                    sx={{ height: 20, fontSize: '0.7rem' }}
+                  />
+                </Stack>
+              </MenuItem>
+              {availableProgress.length > 0 ? (
+                availableProgress.map((progress) => (
+                  <MenuItem key={progress} value={progress}>
+                    <Typography variant="body2">{progress}</Typography>
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>
+                  <Typography variant="body2" color="text.secondary">
+                    No hay tipos disponibles
+                  </Typography>
+                </MenuItem>
+              )}
+            </Select>
+          </FormControl>
         </Stack>
       </Stack>
     </Box>

@@ -36,4 +36,19 @@ export interface WorkAssignmentFiltersProps {
    * Callback when filter status changes
    */
   onFilterChange: (filter: FilterStatus) => void;
+
+  /**
+   * Current progress filter (tipo de trabajo)
+   */
+  progressFilter: string;
+
+  /**
+   * Callback when progress filter changes
+   */
+  onProgressFilterChange: (value: string) => void;
+
+  /**
+   * Available progress types (tipos de trabajo únicos)
+   */
+  availableProgress: string[];
 }
