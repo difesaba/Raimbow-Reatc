@@ -147,13 +147,13 @@ export interface PayrollTableProps {
 }
 
 /**
- * 🗂️ Props para componente PayrollDetailDrawer
+ * 🗂️ Props para componente PayrollDetailModal
  */
-export interface PayrollDetailDrawerProps {
-  /** Si el drawer está abierto */
+export interface PayrollDetailModalProps {
+  /** Si el modal está abierto */
   open: boolean;
 
-  /** Callback para cerrar el drawer */
+  /** Callback para cerrar el modal */
   onClose: () => void;
 
   /** Detalles del empleado a mostrar */

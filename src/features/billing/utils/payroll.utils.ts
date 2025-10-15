@@ -95,6 +95,7 @@ export const formatDate = (isoDate: string): string => {
 /**
  * Get the current week's date range (Monday to Sunday)
  */
+/*
 export const getCurrentWeekRange = (): { ini: string; final: string } => {
   const now = new Date();
   const dayOfWeek = now.getDay();
@@ -118,3 +119,113 @@ export const getCurrentWeekRange = (): { ini: string; final: string } => {
     final: formatDateForAPI(sunday)
   };
 };
+*/
+export const getCurrentWeekRange = (): { ini: string; final: string } => {
+   // Obtener la fecha actual
+    const fechaActual = new Date();
+    // Obtener el día de la semana (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+    const diaSemana = fechaActual.getDay();
+    console.log('📆 calcularSemana - Fecha actual:', fechaActual.toDateString(), 'Día de la semana:', diaSemana);
+    // Calcular el día inicial de la semana excluyendo Sábado y Domingo
+    const diaInicialSemana = new Date(fechaActual);
+    diaInicialSemana.setDate(fechaActual.getDate() - diaSemana + 3); // 3 representa el miércoles (0=domingo, 1=lunes, 2=martes, 3=miércoles)
+    while (diaInicialSemana.getDay() === 0 || diaInicialSemana.getDay() === 6) {
+        diaInicialSemana.setDate(diaInicialSemana.getDate() + 1);
+    }
+    // Calcular el día en que termina la semana excluyendo Sábado y Domingo
+    const diaFinSemana = new Date(diaInicialSemana);
+    diaFinSemana.setDate(diaInicialSemana.getDate() + 6); // 6 representa el martes
+    while (diaFinSemana.getDay() === 0 || diaFinSemana.getDay() === 6) {
+        diaFinSemana.setDate(diaFinSemana.getDate() + 1);
+    }
+    // Restar una semana a ambas fechas
+    diaInicialSemana.setDate(diaInicialSemana.getDate() - 7);
+    diaFinSemana.setDate(diaFinSemana.getDate() - 7);
+    // Obtener los componentes de la fecha en formato "year-month-day" SIN CEROS como Flutter
+const formatDateForAPI = (date: Date): string => {
+  // Ajustar a hora local quitando el desfase UTC
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+
+  const year = local.getFullYear();
+  const month = String(local.getMonth() + 1).padStart(2, '0');
+  const day = String(local.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+  console.log( formatDateForAPI(diaInicialSemana),formatDateForAPI(diaFinSemana),'carol')
+  return {
+    ini: formatDateForAPI(diaInicialSemana),
+    final: formatDateForAPI(diaFinSemana),
+  };
+};
+
+
+export const calcularSemanaFinish = () => {
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+    // Obtener el día de la semana (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+    const diaSemana = fechaActual.getDay();
+    // Calcular el día inicial de la próxima semana excluyendo Sábado y Domingo
+    const diaInicialProximaSemana = new Date(fechaActual);
+    diaInicialProximaSemana.setDate(fechaActual.getDate() - diaSemana + 10); // 10 representa el próximo miércoles
+    while (diaInicialProximaSemana.getDay() === 0 || diaInicialProximaSemana.getDay() === 6) {
+        diaInicialProximaSemana.setDate(diaInicialProximaSemana.getDate() + 1);
+    }
+    // Calcular el día en que termina la próxima semana excluyendo Sábado y Domingo
+    const diaFinProximaSemana = new Date(diaInicialProximaSemana);
+    diaFinProximaSemana.setDate(diaInicialProximaSemana.getDate() + 6); // 6 representa el próximo martes
+    while (diaFinProximaSemana.getDay() === 0 || diaFinProximaSemana.getDay() === 6) {
+        diaFinProximaSemana.setDate(diaFinProximaSemana.getDate() + 1);
+    }
+
+    // Ajustar la fecha final para que sea un viernes
+    while (diaFinProximaSemana.getDay() !== 5) { // 5 representa el viernes
+        diaFinProximaSemana.setDate(diaFinProximaSemana.getDate() - 1);
+    }
+
+    // Restar una semana a ambas fechas
+    diaInicialProximaSemana.setDate(diaInicialProximaSemana.getDate() - 7);
+    diaFinProximaSemana.setDate(diaFinProximaSemana.getDate() - 7);
+
+    // Obtener los componentes de la fecha en formato "year-month-day"
+    const formatoDiaInicialProximaSemana = `${diaInicialProximaSemana.getFullYear()}-${(diaInicialProximaSemana.getMonth() + 1).toString().padStart(2, '0')}-${diaInicialProximaSemana.getDate().toString().padStart(2, '0')}`;
+    const formatoDiaFinProximaSemana = `${diaFinProximaSemana.getFullYear()}-${(diaFinProximaSemana.getMonth() + 1).toString().padStart(2, '0')}-${diaFinProximaSemana.getDate().toString().padStart(2, '0')}`;
+
+
+    console.log(formatoDiaInicialProximaSemana,formatoDiaFinProximaSemana,'Deigo1') 
+   
+}
+
+export const calcularSemanaActual = () => {
+    // Obtener la fecha actual
+    const fechaActual = new Date();
+
+    // Obtener el día de la semana (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+    const diaSemana = fechaActual.getDay();
+
+    // Calcular el día inicial de la semana excluyendo Sábado y Domingo
+    // Réplica exacta del JavaScript original
+    const diaInicialSemana = new Date(fechaActual);
+    diaInicialSemana.setDate(fechaActual.getDate() - diaSemana + (diaSemana === 0 ? -6 : 1));
+    while (diaInicialSemana.getDay() === 6 || diaInicialSemana.getDay() === 0) {
+        diaInicialSemana.setDate(diaInicialSemana.getDate() + 1);
+    }
+
+    // Calcular el día en que termina la semana excluyendo Sábado y Domingo
+    // +4 días desde el lunes = viernes (lunes a viernes = 5 días laborales)
+    const diaFinSemana = new Date(diaInicialSemana);
+    diaFinSemana.setDate(diaInicialSemana.getDate() + 4);
+    while (diaFinSemana.getDay() === 6 || diaFinSemana.getDay() === 0) {
+        diaFinSemana.setDate(diaFinSemana.getDate() + 1);
+    }
+
+    // Obtener los componentes de la fecha en formato "year-month-day"
+    const formatoDiaInicialSemana = `${diaInicialSemana.getFullYear()}-${(diaInicialSemana.getMonth() + 1).toString().padStart(2, '0')}-${diaInicialSemana.getDate().toString().padStart(2, '0')}`;
+    const formatoDiaFinSemana = `${diaFinSemana.getFullYear()}-${(diaFinSemana.getMonth() + 1).toString().padStart(2, '0')}-${diaFinSemana.getDate().toString().padStart(2, '0')}`;
+
+    
+        console.log(formatoDiaInicialSemana,formatoDiaFinSemana,'Deigo2') 
+ 
+    
+}

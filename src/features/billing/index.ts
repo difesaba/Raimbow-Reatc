@@ -16,8 +16,7 @@ export type {
   PayrollWeekRange,
   PayrollSummary,
   PayrollHeaderProps,
-  PayrollTableProps,
-  PayrollDetailDrawerProps
+  PayrollTableProps
 } from './interfaces/payroll.interfaces';
 
 // Hooks (for future use when connecting to API)

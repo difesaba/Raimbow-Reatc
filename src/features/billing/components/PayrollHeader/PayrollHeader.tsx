@@ -18,18 +18,25 @@ export const PayrollHeader: React.FC<PayrollHeaderProps> = ({
   summary,
   loading = false
 }) => {
-  const formatDateRange = (start: string, end: string): string => {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-
-    const options: Intl.DateTimeFormatOptions = {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    };
-
-    return `${startDate.toLocaleDateString('es-ES', options)} - ${endDate.toLocaleDateString('es-ES', options)}`;
+const formatDateRange = (start: string, end: string): string => {
+  const parseLocalDate = (str: string): Date => {
+    const [year, month, day] = str.split('-').map(Number);
+    // OJO: los meses en Date van de 0 a 11
+    return new Date(year, month - 1, day);
   };
+
+  const startDate = parseLocalDate(start);
+  const endDate = parseLocalDate(end);
+
+  const options: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  };
+
+  return `${startDate.toLocaleDateString('es-ES', options)} - ${endDate.toLocaleDateString('es-ES', options)}`;
+};
+
 
   if (loading) {
     return (

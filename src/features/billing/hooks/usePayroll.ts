@@ -44,6 +44,8 @@ export const useWeeklyPayroll = (initialWeekRange?: PayrollWeekRange) => {
 
     try {
       // 📝 Validar fechas antes de hacer la petición
+
+      console.log(weekRange,'semana hook')
       PayrollService.validateWeekRange(weekRange);
 
       // 📡 Llamada al servicio

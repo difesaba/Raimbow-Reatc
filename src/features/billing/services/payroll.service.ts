@@ -26,21 +26,32 @@ export class PayrollService {
    */
   static async getWeeklyPayroll(weekRange: PayrollWeekRange): Promise<PayrollEmployee[]> {
     try {
+      console.log(weekRange, 'semana servicio')
       const response = await apiService.get(
         `${this.BASE_PATH}/semana?ini=${weekRange.ini}&fin=${weekRange.final}`
       );
       return response.data;
-    } catch (error: any) {
-      // 📝 Extraer mensaje de error del backend si está disponible
-      const errorMessage = error.response?.data?.message ||
-                          error.message ||
-                          'Error al obtener datos de nómina semanal';
+    } catch (error: unknown) {
+      let errorMessage = 'Error al obtener datos de nómina semanal';
+      let status: number | undefined;
+
+      if (error instanceof Error) {
+        // Error genérico
+        errorMessage = error.message;
+      }
+
+      // Si es un error HTTP de Axios
+      if (typeof error === 'object' && error !== null && 'response' in error) {
+        const err = error as { response?: { data?: { message?: string }, status?: number } };
+        errorMessage = err.response?.data?.message || errorMessage;
+        status = err.response?.status;
+      }
 
       console.error('❌ Error fetching weekly payroll:', {
         endpoint: `${this.BASE_PATH}/semana`,
         params: weekRange,
         error: errorMessage,
-        status: error.response?.status
+        status
       });
 
       throw new Error(errorMessage);
@@ -66,8 +77,8 @@ export class PayrollService {
     } catch (error: any) {
       // 📝 Extraer mensaje de error del backend si está disponible
       const errorMessage = error.response?.data?.message ||
-                          error.message ||
-                          `Error al obtener detalles del empleado ${employeeId}`;
+        error.message ||
+        `Error al obtener detalles del empleado ${employeeId}`;
 
       console.error('❌ Error fetching employee details:', {
         endpoint: `${this.BASE_PATH}/det`,
@@ -104,8 +115,8 @@ export class PayrollService {
       return response.data;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message ||
-                          error.message ||
-                          `Error al exportar nómina en formato ${format}`;
+        error.message ||
+        `Error al exportar nómina en formato ${format}`;
 
       console.error('❌ Error exporting payroll:', {
         endpoint: `${this.BASE_PATH}/export`,
@@ -141,8 +152,8 @@ export class PayrollService {
       return response.data;
     } catch (error: any) {
       const errorMessage = error.response?.data?.message ||
-                          error.message ||
-                          `Error al generar comprobante para empleado ${employeeId}`;
+        error.message ||
+        `Error al generar comprobante para empleado ${employeeId}`;
 
       console.error('❌ Error generating statement:', {
         endpoint: `${this.BASE_PATH}/statement`,

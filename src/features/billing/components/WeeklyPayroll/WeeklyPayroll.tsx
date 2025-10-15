@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Stack, Alert, Snackbar } from '@mui/material';
 import { PayrollHeader } from '../PayrollHeader';
 import { PayrollTable } from '../PayrollTable';
-import { PayrollDetailDrawer } from '../PayrollDetailDrawer';
+import { PayrollDetailModal } from '../PayrollDetailModal';
 import type {
   PayrollWeekRange
 } from '../../interfaces/payroll.interfaces';
@@ -27,7 +27,7 @@ export const WeeklyPayroll: React.FC = () => {
     setWeekRange,
     loading,
     error,
-    refresh: _refresh,  // Prefixar con _ para indicar que no se usa
+ 
 
     // Employee details
     details,
@@ -128,8 +128,8 @@ export const WeeklyPayroll: React.FC = () => {
           downloading={exporting}
         />
 
-        {/* Detail drawer */}
-        <PayrollDetailDrawer
+        {/* Detail modal */}
+        <PayrollDetailModal
           open={drawerOpen}
           onClose={handleCloseDrawer}
           employeeDetails={details}
