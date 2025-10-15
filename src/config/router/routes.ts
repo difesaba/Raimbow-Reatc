@@ -8,10 +8,10 @@
 
 export const ROUTES = {
   // Rutas públicas
-  LOGIN: '/login',
+  ROOT: '/',
+  LOGIN: '/portal',
 
   // Rutas protegidas
-  ROOT: '/',
   DASHBOARD: '/dashboard',
 
   // Módulos de negocio (futuro)

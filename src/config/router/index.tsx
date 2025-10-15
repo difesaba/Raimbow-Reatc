@@ -7,10 +7,13 @@ import { useAuthStore } from '../../features/auth/store/authStore';
 // Layout
 import { MainLayout } from '../../features/shared/components/MainLayout';
 
-// Páginas
+// Páginas públicas
+import { LandingPage } from '../../features/landing/pages';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
-import { DashboardPage } from '../../features/shared/pages/DashboardPage';
 import { NotFoundPage } from '../../features/shared/pages/NotFoundPage';
+
+// Páginas protegidas
+import { DashboardPage } from '../../features/shared/pages/DashboardPage';
 
 // Billing Module
 import { ActualPayrollPage } from '../../features/billing/pages/ActualPayrollPage';
@@ -31,21 +34,22 @@ import { RolesManagementPage } from '../../features/roles/pages/RolesManagementP
  * Configuración principal del router de la aplicación
  *
  * Estructura:
- * - Rutas públicas: /login
- * - Rutas protegidas: /, /dashboard, /obras, etc. (envueltas en MainLayout)
+ * - Ruta pública raíz: / (Landing Page - accesible sin login)
+ * - Ruta pública login: /portal (Employee Portal - requiere login)
+ * - Rutas protegidas: /dashboard, /obras, etc. (envueltas en MainLayout)
  * - Ruta 404: Cualquier ruta no definida
  *
- * El usuario sin autenticar siempre es redirigido a /login
- * El usuario autenticado es redirigido a /dashboard si intenta acceder a /login
+ * El usuario sin autenticar puede ver la landing page en /
+ * El usuario autenticado es redirigido a /dashboard si intenta acceder a /portal
  */
 export const router = createBrowserRouter([
-  // Ruta raíz - Redirige según estado de autenticación
+  // Ruta raíz - Landing page pública
   {
     path: ROUTES.ROOT,
-    element: <RootRedirect />,
+    element: <LandingPage />,
   },
 
-  // Rutas públicas
+  // Ruta de login del portal de empleados
   {
     path: ROUTES.LOGIN,
     element: <LoginRedirect />,
@@ -151,23 +155,7 @@ export const router = createBrowserRouter([
 ]);
 
 /**
- * RootRedirect - Componente que maneja la redirección de la ruta raíz
- *
- * - Si el usuario está autenticado → Redirige a /dashboard
- * - Si no está autenticado → Redirige a /login
- */
-function RootRedirect() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  if (isAuthenticated) {
-    return <Navigate to={ROUTES.DASHBOARD} replace />;
-  }
-
-  return <Navigate to={ROUTES.LOGIN} replace />;
-}
-
-/**
- * LoginRedirect - Componente que maneja el acceso a /login
+ * LoginRedirect - Componente que maneja el acceso a /portal
  *
  * - Si el usuario YA está autenticado → Redirige a /dashboard
  * - Si no está autenticado → Muestra la página de login
