@@ -566,48 +566,44 @@ export const WorkAssignmentTable = ({
           horizontal: 'right',
         }}
       >
-        {selectedWork?.TaskId && selectedWork.TaskId > 0 ? (
-          <>
-            <MenuItem onClick={handleEdit}>
-              <ListItemIcon>
-                <Edit fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Editar tarea" />
-            </MenuItem>
+        {selectedWork?.TaskId && selectedWork.TaskId > 0 ? [
+          <MenuItem key="edit" onClick={handleEdit}>
+            <ListItemIcon>
+              <Edit fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Editar tarea" />
+          </MenuItem>,
 
-            <MenuItem onClick={handleViewDetails}>
-              <ListItemIcon>
-                <Info fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Ver detalles completos" />
-            </MenuItem>
+          <MenuItem key="details" onClick={handleViewDetails}>
+            <ListItemIcon>
+              <Info fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Ver detalles completos" />
+          </MenuItem>,
 
-            <MenuItem onClick={handleViewAudit}>
-              <ListItemIcon>
-                <History fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Ver auditoría" />
-            </MenuItem>
+          <MenuItem key="audit" onClick={handleViewAudit}>
+            <ListItemIcon>
+              <History fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Ver auditoría" />
+          </MenuItem>,
 
-            <Divider />
+          <Divider key="divider" />,
 
-            <MenuItem onClick={handleDelete} sx={{ color: 'error.main' }}>
-              <ListItemIcon>
-                <Delete fontSize="small" color="error" />
-              </ListItemIcon>
-              <ListItemText primary="Eliminar tarea" />
-            </MenuItem>
-          </>
-        ) : (
-          <>
-            <MenuItem onClick={handleViewDetails}>
-              <ListItemIcon>
-                <Info fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="Ver detalles completos" />
-            </MenuItem>
-          </>
-        )}
+          <MenuItem key="delete" onClick={handleDelete} sx={{ color: 'error.main' }}>
+            <ListItemIcon>
+              <Delete fontSize="small" color="error" />
+            </ListItemIcon>
+            <ListItemText primary="Eliminar tarea" />
+          </MenuItem>
+        ] : [
+          <MenuItem key="details" onClick={handleViewDetails}>
+            <ListItemIcon>
+              <Info fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Ver detalles completos" />
+          </MenuItem>
+        ]}
       </Menu>
     </>
   );

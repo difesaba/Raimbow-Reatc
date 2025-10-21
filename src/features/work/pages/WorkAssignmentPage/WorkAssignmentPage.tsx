@@ -42,6 +42,7 @@ interface WorkAssignment extends Work {
   Colors?: string;
   DoorDesc?: string;
   StainDesc?: string;
+  Address?: string; // Dirección de la obra/lote
 }
 
 /**
@@ -82,6 +83,9 @@ export const WorkAssignmentPage = () => {
 
   // Force re-render key for table
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Guard to prevent multiple simultaneous save operations
+  const [isSaving, setIsSaving] = useState(false);
 
   // Statistics
   const [stats, setStats] = useState({
@@ -169,6 +173,13 @@ export const WorkAssignmentPage = () => {
           console.log('📋 Todos los campos disponibles:', Object.keys(detail));
         }
 
+        // 🔍 DEBUG: Log del campo address en cada registro
+        console.log(`🏠 DEBUG - Lote ${index + 1} - Address:`, {
+          'address (minúscula)': (detail as any).address,
+          'Address (mayúscula)': (detail as any).Address,
+          'Valor que se guardará': (detail as any).address || (detail as any).Address || undefined
+        });
+
         // 🔧 Procesar Progress - puede venir como "Final Paint - Lote 72" o como ID numérico
         const progressValue = detail.Progress as any;
         let workName: string = String(progressValue);
@@ -185,13 +196,19 @@ export const WorkAssignmentPage = () => {
           }
         }
 
-        // 🔍 Mapear TaskId: si es null → 0 (para detectar como tarea nueva)
-        const taskId = detail.TaskId || 0;
+        // 🔍 Mapear TaskId: IMPORTANTE - Preservar null/undefined distintos de 0
+        // - Si TaskId es un número > 0: tarea existente
+        // - Si TaskId es null/undefined: tarea nueva (sin asignar aún)
+        // - Si TaskId es 0: tarea nueva
+        const taskId = detail.TaskId ?? 0; // Usar nullish coalescing para preservar 0 si viene del backend
 
         console.log(`🔍 DEBUG - Lote ${index + 1}:`, {
-          'TaskId backend': detail.TaskId,
+          'TaskId backend RAW': detail.TaskId,
+          'TaskId backend type': typeof detail.TaskId,
+          'TaskId backend === null': detail.TaskId === null,
+          'TaskId backend === undefined': detail.TaskId === undefined,
           'TaskId mapeado': taskId,
-          'Es tarea nueva': taskId === 0,
+          'Es tarea nueva (TaskId === 0)': taskId === 0,
           'Number original': detail.Number,
           'Progress original': detail.Progress,
           'Number procesado': lotNumber,
@@ -249,7 +266,8 @@ export const WorkAssignmentPage = () => {
           SFQuantity: detail.SFQuantity,
           Colors: detail.Colors,
           DoorDesc: detail.DoorDesc,
-          StainDesc: detail.StainDesc
+          StainDesc: detail.StainDesc,
+          Address: detail.address || (detail as any).Address || undefined // Dirección de la obra (intentar minúscula y mayúscula)
         };
       });
 
@@ -283,6 +301,29 @@ export const WorkAssignmentPage = () => {
 
   // Handle edit work
   const handleEdit = (work: WorkAssignment) => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🔧 handleEdit - Opening edit dialog');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📋 Work completo:', work);
+    console.log('🆔 TaskId details:', {
+      TaskId: work.TaskId,
+      'TaskId type': typeof work.TaskId,
+      'TaskId value': work.TaskId,
+      'Is null?': work.TaskId === null,
+      'Is undefined?': work.TaskId === undefined,
+      'Is 0?': work.TaskId === 0,
+      'Is > 0?': work.TaskId ? work.TaskId > 0 : false,
+      'Will be detected as NEW?': !work.TaskId || work.TaskId === 0,
+      'Will be detected as UPDATE?': work.TaskId && work.TaskId > 0
+    });
+    console.log('📊 Work info:', {
+      LotId: work.LotId,
+      Status: work.Status,
+      ManagerName: work.ManagerName,
+      WorkName: work.WorkName,
+      Number: work.Number
+    });
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     setWorkToEdit(work);
     setEditDialogOpen(true);
   };
@@ -291,9 +332,39 @@ export const WorkAssignmentPage = () => {
   const handleSaveEdit = async (data: TaskEditFormData): Promise<NotificationResult | undefined> => {
     if (!workToEdit) return undefined;
 
+    // 🛡️ Guard: Prevent multiple simultaneous saves
+    if (isSaving) {
+      console.warn('⚠️ handleSaveEdit - Already saving, ignoring duplicate call');
+      return undefined;
+    }
+
+    console.log('💾 handleSaveEdit - Starting save with workToEdit:', {
+      'workToEdit.TaskId': workToEdit.TaskId,
+      'workToEdit.TaskId type': typeof workToEdit.TaskId,
+      'workToEdit.TaskId === null': workToEdit.TaskId === null,
+      'workToEdit.TaskId === undefined': workToEdit.TaskId === undefined,
+      'workToEdit.TaskId === 0': workToEdit.TaskId === 0,
+      'workToEdit.TaskId > 0': workToEdit.TaskId ? workToEdit.TaskId > 0 : false,
+      'Full workToEdit object': workToEdit
+    });
+
+    setIsSaving(true);
+
     try {
-      // Determinar si es CREATE o UPDATE basado en TaskId
-      const isNewTask = !workToEdit.TaskId || workToEdit.TaskId === 0;
+      // Determinar si es CREATE o UPDATE basado en TaskId Y si ya tiene manager asignado
+      // Si ya tiene UserRainbow (manager asignado), SIEMPRE debe ser UPDATE, incluso si TaskId es 0
+      const hasManager = !!workToEdit.UserRainbow || !!workToEdit.ManagerName;
+      const isNewTask = (!workToEdit.TaskId || workToEdit.TaskId === 0) && !hasManager;
+
+      console.log(`🔍 Decision: isNewTask = ${isNewTask}`, {
+        'TaskId': workToEdit.TaskId,
+        'UserRainbow': workToEdit.UserRainbow,
+        'ManagerName': workToEdit.ManagerName,
+        'hasManager': hasManager,
+        'Will CREATE': isNewTask,
+        'Will UPDATE': !isNewTask
+      });
+
       let notificationResult: NotificationResult | undefined;
 
       if (isNewTask) {
@@ -306,6 +377,7 @@ export const WorkAssignmentPage = () => {
           Completed: data.completed
         });
 
+        // PASO 1: Crear la tarea (sin fechas, solo manager)
         const createResponse = await WorkService.createWork({
           LotId: workToEdit.LotId!,
           Town: workToEdit.Town!,
@@ -316,32 +388,108 @@ export const WorkAssignmentPage = () => {
           User: 1
         });
 
-        // Capturar notificationResult
+        // Capturar notificationResult del CREATE
         notificationResult = createResponse.notification;
         console.log('📱 Notification from CREATE response:', notificationResult);
+        console.log('📱 Notification JSON completo:', JSON.stringify(notificationResult, null, 2));
 
+        // Obtener el nuevo TaskId
         const newTaskId = createResponse.data?.TaskId ||
                           (createResponse as any).TaskId ||
                           (createResponse as any).taskId;
 
-        // Actualizar el work localmente
-        setWorks(prev => prev.map(work => {
-          if (work.LotId === workToEdit.LotId &&
-              work.Status === workToEdit.Status &&
-              (!work.TaskId || work.TaskId === 0)) {
-            return {
-              ...work,
-              TaskId: newTaskId,
-              UserRainbow: data.manager.id,
-              ManagerName: data.manager.name,
-              StartDate: data.startDate,
-              EndDate: data.endDate,
-              Completed: data.completed,
-              Obs: data.observations
-            };
+        console.log('✅ Task created with TaskId:', newTaskId);
+
+        // PASO 2: Si hay fechas, actualizarlas inmediatamente
+        if (newTaskId && (data.startDate || data.endDate)) {
+          console.log('📅 Updating dates for newly created task:', {
+            TaskId: newTaskId,
+            StartDate: data.startDate,
+            EndDate: data.endDate
+          });
+
+          const updateResponse = await WorkService.updateWork({
+            TaskId: newTaskId,
+            UserRainbow: data.manager.id,
+            User: 1,
+            StartDate: data.startDate || '',
+            EndDate: data.endDate || '',
+            Completed: false, // Primera asignación siempre es false
+            Obs: data.observations
+          });
+
+          // Sobrescribir notificationResult con el del UPDATE (más reciente)
+          if (updateResponse.notification) {
+            notificationResult = updateResponse.notification;
+            console.log('📱 Notification from UPDATE response:', notificationResult);
+            console.log('📱 Notification JSON completo:', JSON.stringify(notificationResult, null, 2));
           }
-          return work;
-        }));
+        }
+
+        // Actualizar el work localmente
+        setWorks(prev => {
+          console.log('🔄 Actualizando estado local después de CREATE');
+          console.log('🔍 Buscando work con:', {
+            LotId: workToEdit.LotId,
+            Status: workToEdit.Status,
+            'TaskId actual': workToEdit.TaskId
+          });
+
+          const updatedWorks = prev.map(work => {
+            const matches = work.LotId === workToEdit.LotId &&
+                            work.Status === workToEdit.Status &&
+                            (!work.TaskId || work.TaskId === 0);
+
+            console.log(`🔍 Comparando con work:`, {
+              'work.LotId': work.LotId,
+              'work.Status': work.Status,
+              'work.TaskId': work.TaskId,
+              'work.Number': work.Number,
+              matches
+            });
+
+            if (matches) {
+              console.log('✅ Match encontrado! Actualizando con TaskId:', newTaskId);
+              return {
+                ...work,
+                TaskId: newTaskId,
+                UserRainbow: data.manager.id,
+                ManagerName: data.manager.name,
+                StartDate: data.startDate,
+                EndDate: data.endDate,
+                Completed: false, // Primera asignación siempre es false
+                Obs: data.observations
+              };
+            }
+            return work;
+          });
+
+          console.log('🔄 Estado actualizado. Verificando resultado...');
+          const updatedWork = updatedWorks.find(w =>
+            w.LotId === workToEdit.LotId && w.Status === workToEdit.Status
+          );
+          console.log('✅ Work después de actualizar:', updatedWork);
+
+          return updatedWorks;
+        });
+
+        // 🔄 CRÍTICO: Actualizar workToEdit con el nuevo TaskId
+        // Esto previene intentos de crear duplicados si el usuario guarda nuevamente sin cerrar el modal
+        setWorkToEdit(prev => {
+          if (!prev) return null;
+
+          console.log('🔄 Actualizando workToEdit con nuevo TaskId:', newTaskId);
+          return {
+            ...prev,
+            TaskId: newTaskId,
+            UserRainbow: data.manager.id,
+            ManagerName: data.manager.name,
+            StartDate: data.startDate,
+            EndDate: data.endDate,
+            Completed: false,
+            Obs: data.observations
+          };
+        });
 
         // Recalcular stats
         setStats(prevStats => ({
@@ -359,6 +507,13 @@ export const WorkAssignmentPage = () => {
           Manager: data.manager.name,
           Completed: data.completed
         });
+
+        // 🛡️ Validación: Si no tiene TaskId válido pero tiene manager, hay un problema de sincronización
+        if (!workToEdit.TaskId || workToEdit.TaskId <= 0) {
+          const errorMsg = `Error de sincronización: La tarea tiene manager asignado (${workToEdit.ManagerName}) pero TaskId inválido (${workToEdit.TaskId}). Por favor, recarga la página.`;
+          console.error('❌', errorMsg);
+          throw new Error(errorMsg);
+        }
 
         const updatePayload = {
           TaskId: workToEdit.TaskId,
@@ -382,6 +537,7 @@ export const WorkAssignmentPage = () => {
         // Capturar notificationResult
         notificationResult = updateResponse.notification;
         console.log('📱 Notification from UPDATE response:', notificationResult);
+        console.log('📱 Notification JSON completo:', JSON.stringify(notificationResult, null, 2));
 
         const wasUnassigned = !workToEdit.ManagerName;
 
@@ -399,6 +555,22 @@ export const WorkAssignmentPage = () => {
               }
             : work
         ));
+
+        // 🔄 Actualizar workToEdit para mantener sincronización
+        setWorkToEdit(prev => {
+          if (!prev) return null;
+
+          console.log('🔄 Actualizando workToEdit después de UPDATE exitoso');
+          return {
+            ...prev,
+            UserRainbow: data.manager.id,
+            ManagerName: data.manager.name,
+            StartDate: data.startDate,
+            EndDate: data.endDate,
+            Completed: data.completed,
+            Obs: data.observations
+          };
+        });
 
         // Recalcular stats si cambió de sin asignar a asignado
         if (wasUnassigned) {
@@ -426,6 +598,10 @@ export const WorkAssignmentPage = () => {
     } catch (err: unknown) {
       console.error('❌ Error saving changes:', err);
       throw err; // Re-throw para que TaskEditDialog lo maneje
+    } finally {
+      // 🛡️ Liberar el guard sin importar si tuvo éxito o falló
+      setIsSaving(false);
+      console.log('✅ handleSaveEdit - Save operation completed, guard released');
     }
   };
 

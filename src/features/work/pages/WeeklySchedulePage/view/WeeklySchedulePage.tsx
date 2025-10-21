@@ -288,11 +288,11 @@ export const WeeklySchedulePage = () => {
         {/* Notification Result Alert */}
         {lastNotification && (
           <Alert
-            severity={lastNotification.totalFailed > 0 ? "warning" : "success"}
+            severity={lastNotification.whatsapp?.isSuccess ? "success" : "warning"}
             onClose={clearNotification}
           >
             <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-              Estado de las Notificaciones
+              {lastNotification.sent ? '✅ Notificación Enviada' : '⚠️ Notificación No Enviada'}
             </Typography>
 
             {lastNotification.user && (
@@ -304,31 +304,31 @@ export const WeeklySchedulePage = () => {
 
             <Stack spacing={1} mt={1}>
               {/* WhatsApp Status */}
-              <Box>
-                <Typography variant="body2" component="span">
-                  {lastNotification.whatsapp.success ? '✅' : '❌'} <strong>WhatsApp:</strong>{' '}
-                  {lastNotification.whatsapp.success
-                    ? `Enviado exitosamente ${lastNotification.whatsapp.messageSid ? `(${lastNotification.whatsapp.messageSid})` : ''}`
-                    : `Falló ${lastNotification.whatsapp.error ? `- ${lastNotification.whatsapp.error}` : ''}`
-                  }
-                </Typography>
-              </Box>
+              {lastNotification.whatsapp && (
+                <Box>
+                  <Typography variant="body2" component="span">
+                    {lastNotification.whatsapp.isSuccess ? '✅' : '❌'} <strong>WhatsApp:</strong>{' '}
+                    {lastNotification.whatsapp.isSuccess
+                      ? `Estado: ${lastNotification.whatsapp.status}${lastNotification.whatsapp.messageSid ? ` (${lastNotification.whatsapp.messageSid})` : ''}`
+                      : lastNotification.whatsapp.errorMessage || 'Error desconocido'
+                    }
+                  </Typography>
+                </Box>
+              )}
 
-              {/* SMS Status */}
-              <Box>
-                <Typography variant="body2" component="span">
-                  {lastNotification.sms.success ? '✅' : '❌'} <strong>SMS:</strong>{' '}
-                  {lastNotification.sms.success
-                    ? `Enviado exitosamente ${lastNotification.sms.messageSid ? `(${lastNotification.sms.messageSid})` : ''}`
-                    : `Falló ${lastNotification.sms.error ? `- ${lastNotification.sms.error}` : ''}`
-                  }
-                </Typography>
-              </Box>
+              {/* Reason if not sent */}
+              {lastNotification.reason && (
+                <Alert severity="info" sx={{ mt: 1 }}>
+                  <Typography variant="body2">
+                    {lastNotification.reason}
+                  </Typography>
+                </Alert>
+              )}
 
               {/* Summary */}
               <Divider sx={{ my: 0.5 }} />
               <Typography variant="body2" fontWeight={500}>
-                <strong>Resumen:</strong> {lastNotification.totalSent} enviado{lastNotification.totalSent !== 1 ? 's' : ''}, {lastNotification.totalFailed} fallido{lastNotification.totalFailed !== 1 ? 's' : ''}
+                <strong>Estado:</strong> {lastNotification.sent ? '✅ Enviado' : '❌ No enviado'}
               </Typography>
             </Stack>
           </Alert>

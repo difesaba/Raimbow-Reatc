@@ -102,6 +102,7 @@ export interface LotDetail {
   Colors?: string;
   DoorDesc?: string;
   StainDesc?: string;
+  address?: string; // Dirección de la obra/lote (campo del backend en minúscula)
 }
 
 /**
@@ -214,11 +215,17 @@ export interface ParsedSummary {
 
 /**
  * 📱 NotificationChannel - Resultado de envío por canal (WhatsApp o SMS)
+ * Estructura completa de la respuesta del backend
  */
 export interface NotificationChannel {
-  success: boolean;
-  messageSid?: string;
-  error?: string;
+  messageSid: string | null;
+  messageLogId: number | null;
+  status: string; // "queued", "sent", "delivered", "failed", "unknown"
+  errorCode: string | null;
+  errorMessage: string | null;
+  isSuccess: boolean; // ← Flag principal para verificar éxito
+  isFailed: boolean;
+  isSandboxIssue: boolean; // ← Indica si el error es por sandbox de Twilio
 }
 
 /**
@@ -226,13 +233,12 @@ export interface NotificationChannel {
  * Incluido en las respuestas de creación/actualización de tareas
  */
 export interface NotificationResult {
-  sent: boolean;
-  user?: string;
-  phone?: string;
-  whatsapp: NotificationChannel;
-  sms: NotificationChannel;
-  totalSent: number;
-  totalFailed: number;
+  sent: boolean; // true si al menos un mensaje se envió correctamente
+  user?: string; // Nombre del usuario (ej: "Juan Pérez")
+  phone: string | null; // Teléfono del usuario (ej: "+13045207634")
+  whatsapp: NotificationChannel; // Resultado del envío por WhatsApp
+  reason: string | null; // Razón si no se pudo enviar (ej: "Usuario no tiene WhatsApp/teléfono configurado")
+  error: string | null; // Error general si hubo fallo
 }
 
 /**

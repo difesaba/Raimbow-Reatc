@@ -32,7 +32,8 @@ import {
   CheckCircle,
   Save,
   Business,
-  Assignment
+  Assignment,
+  LocationOn
 } from '@mui/icons-material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -53,6 +54,43 @@ const mapUserToManager = (user: User): Manager => ({
   department: user.Company,
   available: user.Status === 1
 });
+
+/**
+ * Helper function to build Google Maps link from address
+ * Returns null if address is invalid, empty, or too short
+ * Handles: URLs (http/https), shortened Google Maps links (goo.gl), coordinates, and plain text addresses
+ */
+const buildGoogleMapsLink = (address: string | undefined): string | null => {
+  // Validaciones básicas
+  if (!address || address.trim() === '' || address === 'N/A') {
+    return null;
+  }
+
+  const trimmedAddress = address.trim();
+
+  // Si ya es una URL completa (http:// o https://), retornar tal cual
+  if (trimmedAddress.startsWith('http://') || trimmedAddress.startsWith('https://')) {
+    return trimmedAddress;
+  }
+
+  // Validar longitud mínima solo para texto plano
+  if (trimmedAddress.length < 10) {
+    return null;
+  }
+
+  // Detectar si es un patrón de coordenadas (lat, lng) o (lat,lng) o "lat lng"
+  // Ejemplos: "25.7617, -80.1918" o "25.7617,-80.1918" o "25.7617 -80.1918"
+  const coordPattern = /^-?\d+\.?\d*[\s,]+-?\d+\.?\d*$/;
+  if (coordPattern.test(trimmedAddress)) {
+    // Limpiar y formatear coordenadas
+    const coords = trimmedAddress.replace(/\s+/g, ',').replace(/,+/g, ',');
+    return `https://www.google.com/maps/search/?api=1&query=${coords}`;
+  }
+
+  // Si es texto plano (dirección), usar API de Google Maps Search
+  const encodedAddress = encodeURIComponent(trimmedAddress);
+  return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+};
 
 export const TaskEditDialog = ({
   open,
@@ -119,7 +157,15 @@ export const TaskEditDialog = ({
       'EndDate truthy': !!work.EndDate,
       Completed: work.Completed,
       Obs: work.Obs,
-      UserRainbow: work.UserRainbow
+      UserRainbow: work.UserRainbow,
+      Address: work.Address
+    });
+
+    console.log('🏠 DEBUG - Address en modal:', {
+      'work.Address': work.Address,
+      'Tipo': typeof work.Address,
+      'Longitud': work.Address?.length,
+      'buildGoogleMapsLink result': buildGoogleMapsLink(work.Address)
     });
 
     // Set dates - parsear sin conversión de zona horaria
@@ -429,6 +475,41 @@ export const TaskEditDialog = ({
                     </Box>
                   </Grid>
                 )}
+
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    DIRECCIÓN
+                  </Typography>
+                  <Stack direction="row" alignItems="center" spacing={0.5} mt={0.5}>
+                    <LocationOn fontSize="small" color="action" />
+                    {(() => {
+                      const mapsLink = buildGoogleMapsLink(work.Address);
+                      return mapsLink ? (
+                        <Typography
+                          component="a"
+                          href={mapsLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          variant="body2"
+                          fontWeight={500}
+                          sx={{
+                            color: 'primary.main',
+                            textDecoration: 'none',
+                            '&:hover': {
+                              textDecoration: 'underline'
+                            }
+                          }}
+                        >
+                          {work.Address}
+                        </Typography>
+                      ) : (
+                        <Typography variant="body2" fontWeight={500} color="text.secondary">
+                          {work.Address || 'N/A'}
+                        </Typography>
+                      );
+                    })()}
+                  </Stack>
+                </Grid>
               </Grid>
             </Stack>
           </Paper>
@@ -443,15 +524,44 @@ export const TaskEditDialog = ({
           )}
 
           {/* Notification Result Alert */}
-          {notificationResult && (
-            <Alert
-              severity={notificationResult.totalFailed > 0 ? "warning" : "success"}
-              onClose={() => setNotificationResult(null)}
-            >
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                Estado de las Notificaciones
-              </Typography>
+          {notificationResult && (() => {
+            // 🔍 DEBUG: Log completo de la notificación
+            console.log('🔍 DEBUG - notificationResult completo:', notificationResult);
+            console.log('🔍 DEBUG - whatsapp.status:', notificationResult.whatsapp?.status);
+            console.log('🔍 DEBUG - whatsapp.isSuccess:', notificationResult.whatsapp?.isSuccess);
+            console.log('🔍 DEBUG - whatsapp.isFailed:', notificationResult.whatsapp?.isFailed);
 
+            // Determinar si realmente fue exitoso basándonos en el estado
+            // Según tabla: queued, sent, delivered = éxito
+            const successStatuses = ['queued', 'sent', 'delivered'];
+            const actualSuccess = notificationResult.whatsapp?.status
+              ? successStatuses.includes(notificationResult.whatsapp.status.toLowerCase())
+              : notificationResult.whatsapp?.isSuccess;
+
+            if (actualSuccess && !notificationResult.whatsapp?.isSuccess) {
+              console.warn('⚠️ ADVERTENCIA: Backend reportó isSuccess=false pero el estado es', notificationResult.whatsapp?.status, '(debería ser true)');
+            }
+
+            return (
+              <Alert
+                severity={
+                  actualSuccess
+                    ? "success"
+                    : notificationResult.reason
+                      ? "info"
+                      : "warning"
+                }
+                onClose={() => setNotificationResult(null)}
+              >
+                <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                  {actualSuccess
+                    ? '✅ Notificación Enviada'
+                    : notificationResult.reason
+                      ? '⚠️ Usuario Sin Configurar'
+                      : '❌ Error en el Envío'}
+                </Typography>
+
+              {/* Usuario y teléfono */}
               {notificationResult.user && (
                 <Typography variant="body2" gutterBottom>
                   <strong>Usuario:</strong> {notificationResult.user}
@@ -459,37 +569,88 @@ export const TaskEditDialog = ({
                 </Typography>
               )}
 
-              <Stack spacing={1} mt={1}>
+              <Stack spacing={1.5} mt={1.5}>
                 {/* WhatsApp Status */}
-                <Box>
-                  <Typography variant="body2" component="span">
-                    {notificationResult.whatsapp.success ? '✅' : '❌'} <strong>WhatsApp:</strong>{' '}
-                    {notificationResult.whatsapp.success
-                      ? `Enviado exitosamente ${notificationResult.whatsapp.messageSid ? `(${notificationResult.whatsapp.messageSid})` : ''}`
-                      : `Falló ${notificationResult.whatsapp.error ? `- ${notificationResult.whatsapp.error}` : ''}`
-                    }
-                  </Typography>
-                </Box>
+                {notificationResult.whatsapp && (
+                  <Box>
+                    <Typography variant="body2" component="div" gutterBottom>
+                      {actualSuccess ? '✅' : '❌'} <strong>WhatsApp</strong>
+                    </Typography>
 
-                {/* SMS Status */}
-                <Box>
-                  <Typography variant="body2" component="span">
-                    {notificationResult.sms.success ? '✅' : '❌'} <strong>SMS:</strong>{' '}
-                    {notificationResult.sms.success
-                      ? `Enviado exitosamente ${notificationResult.sms.messageSid ? `(${notificationResult.sms.messageSid})` : ''}`
-                      : `Falló ${notificationResult.sms.error ? `- ${notificationResult.sms.error}` : ''}`
-                    }
-                  </Typography>
-                </Box>
+                    {actualSuccess ? (
+                      <Typography variant="body2" color="text.secondary" sx={{ ml: 3 }}>
+                        Estado: <strong>{notificationResult.whatsapp.status}</strong>
+                        {notificationResult.whatsapp.messageSid && (
+                          <> • SID: <code style={{ fontSize: '0.75em' }}>{notificationResult.whatsapp.messageSid}</code></>
+                        )}
+                      </Typography>
+                    ) : notificationResult.whatsapp.isSandboxIssue ? (
+                      <Alert severity="warning" sx={{ ml: 3, mt: 0.5 }}>
+                        <Typography variant="caption" component="div" gutterBottom>
+                          <strong>Error de Sandbox de Twilio (Código 63016)</strong>
+                        </Typography>
+                        <Typography variant="caption" component="div" gutterBottom>
+                          El usuario no está registrado en el sandbox de WhatsApp.
+                        </Typography>
+                        <Typography variant="caption" component="div" sx={{ mt: 1 }}>
+                          <strong>Instrucciones:</strong>
+                        </Typography>
+                        <Typography variant="caption" component="div">
+                          1. Envía un mensaje desde WhatsApp a: <strong>+1 415 523 8886</strong>
+                        </Typography>
+                        <Typography variant="caption" component="div">
+                          2. El mensaje debe decir: <code>join {notificationResult.whatsapp.errorCode || 'código-sandbox'}</code>
+                        </Typography>
+                        <Typography variant="caption" component="div">
+                          3. Espera la confirmación de Twilio
+                        </Typography>
+                      </Alert>
+                    ) : (
+                      <Typography variant="body2" color="error" sx={{ ml: 3 }}>
+                        {notificationResult.whatsapp.errorMessage
+                          || (notificationResult.whatsapp.status && notificationResult.whatsapp.status !== 'unknown'
+                            ? `Estado: ${notificationResult.whatsapp.status}`
+                            : 'No se pudo determinar el estado del envío')}
+                        {notificationResult.whatsapp.errorCode && (
+                          <> (Código: {notificationResult.whatsapp.errorCode})</>
+                        )}
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+
+                {/* Razón si no se envió */}
+                {notificationResult.reason && (
+                  <Alert severity="info" sx={{ mt: 1 }}>
+                    <Typography variant="body2">
+                      {notificationResult.reason}
+                    </Typography>
+                  </Alert>
+                )}
+
+                {/* Error general */}
+                {notificationResult.error && (
+                  <Alert severity="error" sx={{ mt: 1 }}>
+                    <Typography variant="body2">
+                      {notificationResult.error}
+                    </Typography>
+                  </Alert>
+                )}
 
                 {/* Summary */}
                 <Divider sx={{ my: 0.5 }} />
                 <Typography variant="body2" fontWeight={500}>
-                  <strong>Resumen:</strong> {notificationResult.totalSent} enviado{notificationResult.totalSent !== 1 ? 's' : ''}, {notificationResult.totalFailed} fallido{notificationResult.totalFailed !== 1 ? 's' : ''}
+                  <strong>Estado Final:</strong>{' '}
+                  {actualSuccess
+                    ? `✅ Enviado correctamente (${notificationResult.whatsapp?.status})`
+                    : notificationResult.reason
+                      ? '⚠️ Usuario sin WhatsApp configurado'
+                      : '❌ No enviado'}
                 </Typography>
               </Stack>
             </Alert>
-          )}
+            );
+          })()}
 
           {/* Manager Selection */}
           <Box>

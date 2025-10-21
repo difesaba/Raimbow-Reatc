@@ -14,6 +14,7 @@ export interface WorkAssignment extends Work {
   Colors?: string;
   DoorDesc?: string;
   StainDesc?: string;
+  Address?: string; // Dirección de la obra/lote
   UserCreate?: number;
   UserUpdate?: number;
 }
