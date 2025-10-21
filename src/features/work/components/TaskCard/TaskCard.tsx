@@ -150,7 +150,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
           </Stack>
 
           {/* Información adicional (si existe) */}
-          {(task.SFQuantity || task.Colors || task.DoorDesc) && (
+          {(task.SFQuantity || task.Colors || task.DoorDesc || task.StainDesc) && (
             <Box
               sx={{
                 pt: 0.5,
@@ -174,7 +174,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {task.Colors}
+                    Colores: {task.Colors}
                   </Typography>
                 )}
                 {task.DoorDesc && (
@@ -187,7 +187,20 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onClick }) => {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {task.DoorDesc}
+                    Puerta: {task.DoorDesc}
+                  </Typography>
+                )}
+                {task.StainDesc && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Stain: {task.StainDesc}
                   </Typography>
                 )}
               </Stack>

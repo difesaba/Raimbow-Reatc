@@ -48,7 +48,12 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  if (!lot) return null;
+  console.log('🎭 LotDetailDialog render - open:', open, 'lotDetails:', lotDetails, 'isLoading:', isLoading);
+
+  if (!lot) {
+    console.log('⚠️ LotDetailDialog: No lot provided, returning null');
+    return null;
+  }
 
   /**
    * Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
@@ -58,6 +63,40 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return 'N/A';
     return date.toLocaleDateString('es-ES');
+  };
+
+  /**
+   * Obtener nombre del proceso desde Progress
+   * Progress puede ser string (nombre del proceso) o number (porcentaje)
+   * Si es string con formato "Nombre - Lote XX", extrae solo el nombre
+   */
+  const getProcessName = (progress: number | string | null | undefined): string => {
+    console.log('🔍 DEBUG Progress value:', progress, 'Type:', typeof progress);
+
+    // Manejar valores vacíos o undefined
+    if (progress === null || progress === undefined || progress === '') {
+      return 'Sin nombre de proceso';
+    }
+
+    // Si es string y no está vacío, procesarlo
+    if (typeof progress === 'string' && progress.trim() !== '') {
+      let processName = progress.trim();
+
+      // Si Progress tiene formato "Nombre del Proceso - Lote XX", separarlo
+      if (processName.includes(' - Lote ')) {
+        const parts = processName.split(' - Lote ');
+        processName = parts[0]; // Extraer solo el nombre del proceso
+      }
+
+      return processName;
+    }
+
+    // Si es número, mostrar como porcentaje
+    if (typeof progress === 'number') {
+      return `Progreso ${progress}%`;
+    }
+
+    return 'Sin nombre de proceso';
   };
 
   return (
@@ -127,6 +166,11 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                   Descripción Puerta: {lot.DoorDesc}
                 </Typography>
               )}
+              {lot.StainDesc && (
+                <Typography variant="caption">
+                  Stain: {lot.StainDesc}
+                </Typography>
+              )}
             </Stack>
           </Stack>
 
@@ -154,7 +198,13 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
               {/* Vista Mobile: Lista */}
               {isMobile ? (
                 <List disablePadding>
-                  {lotDetails.map((detail, index) => (
+                  {lotDetails.map((detail, index) => {
+                    // DEBUG: Ver todos los campos disponibles del detail
+                    if (index === 0) {
+                      console.log('📋 DEBUG Full detail object:', detail);
+                      console.log('📋 Available fields:', Object.keys(detail));
+                    }
+                    return (
                     <Box key={detail.IdDet || index}>
                       <ListItem
                         sx={{
@@ -167,9 +217,14 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                       >
                         {/* Header del item */}
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Typography variant="subtitle2" fontWeight={600} color="primary">
-                            {detail.Number || 'N/A'}
-                          </Typography>
+                          <Stack>
+                            <Typography variant="subtitle2" fontWeight={600} color="primary">
+                              {getProcessName(detail.Progress)}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              Lote: {detail.Number}
+                            </Typography>
+                          </Stack>
                           <Chip
                             label={detail.InvoiceId !== 0 ? 'Pagado' : 'Pendiente'}
                             color={detail.InvoiceId !== 0 ? 'success' : 'warning'}
@@ -198,16 +253,18 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                           </Typography>
                         </Stack>
 
-                        {/* Progreso */}
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <ProgressIcon fontSize="small" color="primary" />
-                          <Typography variant="body2" color="text.secondary">
-                            Progreso:
-                          </Typography>
-                          <Typography variant="body2" fontWeight={600} color="primary">
-                            {detail.Progress}%
-                          </Typography>
-                        </Stack>
+                        {/* Progreso - solo mostrar si es número */}
+                        {typeof detail.Progress === 'number' && (
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <ProgressIcon fontSize="small" color="primary" />
+                            <Typography variant="body2" color="text.secondary">
+                              Progreso:
+                            </Typography>
+                            <Typography variant="body2" fontWeight={600} color="primary">
+                              {detail.Progress}%
+                            </Typography>
+                          </Stack>
+                        )}
 
                         {/* Días y Manager */}
                         <Stack direction="row" justifyContent="space-between">
@@ -221,7 +278,8 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                       </ListItem>
                       {index < lotDetails.length - 1 && <Divider />}
                     </Box>
-                  ))}
+                    );
+                  })}
                 </List>
               ) : (
                 /* Vista Desktop: Tabla */
@@ -236,7 +294,7 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                             fontWeight: 600
                           }}
                         >
-                          Número
+                          Proceso
                         </TableCell>
                         <TableCell
                           sx={{
@@ -295,7 +353,13 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {lotDetails.map((detail, index) => (
+                      {lotDetails.map((detail, index) => {
+                        // DEBUG: Ver todos los campos disponibles del detail (Desktop)
+                        if (index === 0) {
+                          console.log('🖥️ DEBUG Desktop Full detail object:', detail);
+                          console.log('🖥️ Available fields:', Object.keys(detail));
+                        }
+                        return (
                         <TableRow
                           key={detail.IdDet || index}
                           hover
@@ -304,9 +368,14 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                           }}
                         >
                           <TableCell>
-                            <Typography variant="body2" fontWeight={500}>
-                              {detail.Number || 'N/A'}
-                            </Typography>
+                            <Stack spacing={0.5}>
+                              <Typography variant="body2" fontWeight={500}>
+                                {getProcessName(detail.Progress)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Lote: {detail.Number}
+                              </Typography>
+                            </Stack>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
@@ -326,9 +395,15 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                             />
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2" fontWeight={500}>
-                              {detail.Progress}%
-                            </Typography>
+                            {typeof detail.Progress === 'number' ? (
+                              <Typography variant="body2" fontWeight={500}>
+                                {detail.Progress}%
+                              </Typography>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                N/A
+                              </Typography>
+                            )}
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
@@ -341,7 +416,8 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                             </Typography>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>

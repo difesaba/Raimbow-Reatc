@@ -113,7 +113,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             <TextField
               fullWidth
               size="medium"
-              variant="outlined"
+         
               type="email"
               label="Correo electrónico"
               placeholder="usuario@rainbowpainting.com"
@@ -153,7 +153,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             <TextField
               fullWidth
               size="medium"
-              variant="outlined"
+ 
               type={showPassword ? 'text' : 'password'}
               label="Contraseña"
               placeholder="••••••••"
@@ -294,7 +294,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                     e.preventDefault();
                     onTermsClick?.();
                   }}
-                  variant={'footerLink' as any}
+      
                 >
                   Términos y Condiciones
                 </Link>
@@ -309,7 +309,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                     e.preventDefault();
                     onPrivacyClick?.();
                   }}
-                  variant={'footerLink' as any}
+           
                 >
                   Políticas de Privacidad
                 </Link>

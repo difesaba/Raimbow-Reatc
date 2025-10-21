@@ -78,6 +78,7 @@ export const LotsBySubdivisionPage = () => {
    * 👁️ Manejar apertura de modal de detalles
    */
   const handleViewDetail = async (lot: WorkReport) => {
+    console.log('🚀 handleViewDetail called with lot:', lot);
     setSelectedLot(lot);
     setDetailDialogOpen(true);
     setIsLoadingDetails(true);
@@ -92,15 +93,26 @@ export const LotsBySubdivisionPage = () => {
         status: -1
       };
 
+      console.log('🔧 Filters for getLotDetails:', filters);
+
       // Llamar al endpoint /report-lot para detalles del lote
       const details = await WorkService.getLotDetails(filters);
-      console.log('📋 Lot details:', details);
+      console.log('📋 Lot details response:', details);
+      console.log('📊 Lot details count:', details?.length || 0);
+
+      if (details && details.length > 0) {
+        console.log('📝 First detail object:', details[0]);
+        console.log('📝 First detail Progress:', details[0].Progress);
+        console.log('📝 First detail ProgressStatusId:', details[0].ProgressStatusId);
+      }
+
       setLotDetails(details);
     } catch (error) {
-      console.error('Error fetching lot details:', error);
+      console.error('❌ Error fetching lot details:', error);
       setLotDetails(null);
     } finally {
       setIsLoadingDetails(false);
+      console.log('✅ Modal should be open now. detailDialogOpen:', true);
     }
   };
 

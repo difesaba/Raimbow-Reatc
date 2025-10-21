@@ -114,6 +114,11 @@ export const TaskBar: React.FC<TaskBarProps> = ({
           <strong>Puerta:</strong> {task.DoorDesc}
         </Typography>
       )}
+      {task.StainDesc && (
+        <Typography variant="caption">
+          <strong>Stain:</strong> {task.StainDesc}
+        </Typography>
+      )}
     </Stack>
   );
 

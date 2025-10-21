@@ -64,6 +64,7 @@ export interface WorkReport {
   SFQuantity?: number | string;
   Colors?: string;
   DoorDesc?: string;
+  StainDesc?: string;
 }
 
 /**
@@ -85,7 +86,7 @@ export interface LotDetail {
   SubdivisionId: number;
   SubName: string;
   IsTownHome: number;
-  Progress: number;
+  Progress: number | string; // Puede ser nombre del proceso (string) o porcentaje (number)
   Days: number;
   UserId: number;
   Manager: string;
@@ -100,6 +101,7 @@ export interface LotDetail {
   SFQuantity?: number | string;
   Colors?: string;
   DoorDesc?: string;
+  StainDesc?: string;
 }
 
 /**

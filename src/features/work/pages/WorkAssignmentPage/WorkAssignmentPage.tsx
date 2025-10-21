@@ -41,6 +41,7 @@ interface WorkAssignment extends Work {
   SFQuantity?: number | string;
   Colors?: string;
   DoorDesc?: string;
+  StainDesc?: string;
 }
 
 /**
@@ -247,7 +248,8 @@ export const WorkAssignmentPage = () => {
           Days: detail.Days || detail.WorkDays || 1, // Task duration in days
           SFQuantity: detail.SFQuantity,
           Colors: detail.Colors,
-          DoorDesc: detail.DoorDesc
+          DoorDesc: detail.DoorDesc,
+          StainDesc: detail.StainDesc
         };
       });
 
@@ -750,6 +752,16 @@ export const WorkAssignmentPage = () => {
                         </Typography>
                         <Typography variant="body2" fontWeight={500}>
                           {workToDelete.DoorDesc}
+                        </Typography>
+                      </Box>
+                    )}
+                    {workToDelete.StainDesc && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          STAIN
+                        </Typography>
+                        <Typography variant="body2" fontWeight={500}>
+                          {workToDelete.StainDesc}
                         </Typography>
                       </Box>
                     )}

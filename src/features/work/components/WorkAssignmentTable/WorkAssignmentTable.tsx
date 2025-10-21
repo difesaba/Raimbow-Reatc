@@ -122,6 +122,7 @@ export const WorkAssignmentTable = ({
               <TableCell>PIES</TableCell>
               <TableCell>Colores</TableCell>
               <TableCell>Puerta</TableCell>
+              <TableCell>Stain</TableCell>
               <TableCell>Fecha</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -152,6 +153,9 @@ export const WorkAssignmentTable = ({
                 </TableCell>
                 <TableCell>
                   <Skeleton variant="text" width={80} />
+                </TableCell>
+                <TableCell>
+                  <Skeleton variant="text" width={100} />
                 </TableCell>
                 <TableCell>
                   <Skeleton variant="text" width={100} />
@@ -289,7 +293,7 @@ export const WorkAssignmentTable = ({
                     </Stack>
 
                     {/* Información Adicional (solo si existe) */}
-                    {(work.SFQuantity || work.Colors || work.DoorDesc) && (
+                    {(work.SFQuantity || work.Colors || work.DoorDesc || work.StainDesc) && (
                       <Box sx={{ paddingTop: 1, borderTop: 1, borderColor: 'divider' }}>
                         <Stack spacing={0.5}>
                           {work.SFQuantity && (
@@ -305,6 +309,11 @@ export const WorkAssignmentTable = ({
                           {work.DoorDesc && (
                             <Typography variant="caption" color="text.secondary">
                               Puerta: {work.DoorDesc}
+                            </Typography>
+                          )}
+                          {work.StainDesc && (
+                            <Typography variant="caption" color="text.secondary">
+                              Stain: {work.StainDesc}
                             </Typography>
                           )}
                         </Stack>
@@ -372,6 +381,7 @@ export const WorkAssignmentTable = ({
                 <TableCell>Pies</TableCell>
                 <TableCell>Colores</TableCell>
                 <TableCell>Puerta</TableCell>
+                <TableCell>Stain</TableCell>
                 <TableCell>Fecha</TableCell>
                 <TableCell>Acciones</TableCell>
               </TableRow>
@@ -459,6 +469,12 @@ export const WorkAssignmentTable = ({
                     <TableCell>
                       <Typography variant="body2">
                         {work.DoorDesc || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography variant="body2">
+                        {work.StainDesc || '-'}
                       </Typography>
                     </TableCell>
 

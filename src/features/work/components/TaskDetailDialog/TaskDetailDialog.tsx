@@ -308,7 +308,7 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
           </Paper>
 
           {/* ============ SECCIÓN 4: CARACTERÍSTICAS DEL LOTE ============ */}
-          {(task.SFQuantity || task.Colors || task.DoorDesc) && (
+          {(task.SFQuantity || task.Colors || task.DoorDesc || task.StainDesc) && (
             <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
               <Stack spacing={2}>
                 <Box display="flex" alignItems="center" gap={1}>
@@ -342,12 +342,23 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
                   )}
 
                   {task.DoorDesc && (
-                    <Grid size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <Typography variant="caption" color="text.secondary">
                         DESCRIPCIÓN PUERTA
                       </Typography>
                       <Typography variant="body2">
                         {task.DoorDesc}
+                      </Typography>
+                    </Grid>
+                  )}
+
+                  {task.StainDesc && (
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Typography variant="caption" color="text.secondary">
+                        STAIN
+                      </Typography>
+                      <Typography variant="body2">
+                        {task.StainDesc}
                       </Typography>
                     </Grid>
                   )}

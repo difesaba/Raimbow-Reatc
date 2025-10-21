@@ -176,6 +176,17 @@ export const LotsTable: React.FC<LotsTableProps> = ({
                       </Typography>
                     </Stack>
                   )}
+
+                  {lot.StainDesc && (
+                    <Stack direction="row" spacing={1}>
+                      <Typography variant="body2" color="text.secondary">
+                        Stain:
+                      </Typography>
+                      <Typography variant="body2">
+                        {lot.StainDesc}
+                      </Typography>
+                    </Stack>
+                  )}
                 </Stack>
               </CardContent>
 
@@ -272,6 +283,15 @@ export const LotsTable: React.FC<LotsTableProps> = ({
                   Descripción Puerta
                 </TableCell>
                 <TableCell
+                  sx={{
+                    backgroundColor: 'primary.main',
+                    color: 'primary.contrastText',
+                    fontWeight: 600
+                  }}
+                >
+                  Stain
+                </TableCell>
+                <TableCell
                   align="center"
                   sx={{
                     backgroundColor: 'primary.main',
@@ -329,6 +349,11 @@ export const LotsTable: React.FC<LotsTableProps> = ({
                   <TableCell>
                     <Typography variant="body2">
                       {lot.DoorDesc || '-'}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {lot.StainDesc || '-'}
                     </Typography>
                   </TableCell>
                   <TableCell align="center">

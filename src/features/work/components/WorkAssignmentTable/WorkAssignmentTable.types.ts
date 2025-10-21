@@ -13,6 +13,7 @@ export interface WorkAssignment extends Work {
   SFQuantity?: number | string;
   Colors?: string;
   DoorDesc?: string;
+  StainDesc?: string;
   UserCreate?: number;
   UserUpdate?: number;
 }
