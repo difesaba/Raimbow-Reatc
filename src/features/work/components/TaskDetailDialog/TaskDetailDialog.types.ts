@@ -10,4 +10,5 @@ export interface TaskDetailDialogProps {
   onEdit?: () => void;
   onAssignManager?: () => void;
   onEditDate?: () => void;
+  onVerifyChange?: (task: LotDetail) => Promise<void>;
 }

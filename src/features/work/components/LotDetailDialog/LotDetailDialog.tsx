@@ -19,15 +19,22 @@ import {
   ListItem,
   Divider,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Checkbox,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Home as HomeIcon,
   CalendarToday as CalendarIcon,
-  TrendingUp as ProgressIcon
+  TrendingUp as ProgressIcon,
+  Verified as VerifiedIcon
 } from '@mui/icons-material';
+import { useState, useEffect } from 'react';
+import { WorkService } from '../../services/work.service';
 import type { LotDetailDialogProps } from './LotDetailDialog.types';
+import type { LotDetail } from '../../interfaces/work.interfaces';
 
 /**
  * 🔍 LotDetailDialog - Modal para mostrar detalles completos de un lote con tareas (Responsive)
@@ -48,12 +55,99 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+  // Estado para loading de verificación por TaskId
+  const [verifyLoading, setVerifyLoading] = useState<number | null>(null);
+
+  // Estado local para manejar actualizaciones optimistas
+  const [localLotDetails, setLocalLotDetails] = useState<LotDetail[] | null>(null);
+
+  // Estado para notificación snackbar
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  // Sincronizar estado local con prop cuando cambie
+  useEffect(() => {
+    setLocalLotDetails(lotDetails);
+  }, [lotDetails]);
+
   console.log('🎭 LotDetailDialog render - open:', open, 'lotDetails:', lotDetails, 'isLoading:', isLoading);
 
   if (!lot) {
     console.log('⚠️ LotDetailDialog: No lot provided, returning null');
     return null;
   }
+
+  /**
+   * 🔄 Handler para toggle verificación con actualización optimista
+   */
+  const handleVerifyToggle = async (detail: LotDetail) => {
+    if (!detail.TaskId) {
+      console.log('⚠️ Cannot verify: TaskId is missing');
+      return;
+    }
+
+    setVerifyLoading(detail.TaskId);
+
+    const newVerifyState = !(detail.Verify === 1 || detail.Verify === true);
+
+    console.log('🔄 Toggling verify for TaskId:', detail.TaskId, 'New state:', newVerifyState);
+
+    // 1️⃣ ACTUALIZACIÓN OPTIMISTA: Actualizar UI inmediatamente
+    setLocalLotDetails(prev =>
+      prev?.map(d =>
+        d.TaskId === detail.TaskId
+          ? { ...d, Verify: newVerifyState ? 1 : 0 }
+          : d
+      ) || null
+    );
+
+    try {
+      // 2️⃣ Enviar actualización al backend
+      await WorkService.updateWork({
+        TaskId: detail.TaskId,
+        StartDate: detail.StartDate || detail.InitialDate,
+        EndDate: detail.EndDateTask || detail.EndDate,
+        Completed: detail.Completed === 1 || detail.Completed === true,
+        Verify: newVerifyState,
+        Obs: detail.Obs || '',
+        UserRainbow: detail.UserId || 0,
+        User: 1 // TODO: Get from auth context
+      });
+
+      console.log('✅ Verify toggled successfully in backend');
+
+      // ✅ MOSTRAR NOTIFICACIÓN DE ÉXITO
+      setSnackbar({
+        open: true,
+        message: newVerifyState
+          ? '✅ Registro verificado exitosamente'
+          : 'Verificación removida',
+        severity: 'success'
+      });
+
+    } catch (error) {
+      console.error('❌ Error toggling verify, reverting...', error);
+
+      // 3️⃣ REVERTIR: Si falla el backend, volver al estado original
+      setLocalLotDetails(lotDetails);
+
+      // ❌ MOSTRAR NOTIFICACIÓN DE ERROR
+      setSnackbar({
+        open: true,
+        message: '❌ Error al verificar el registro',
+        severity: 'error'
+      });
+    } finally {
+      setVerifyLoading(null);
+    }
+  };
 
   /**
    * Formatear fecha de YYYY-MM-DD a DD/MM/YYYY
@@ -103,7 +197,7 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
     <Dialog
       open={open}
       fullScreen={isMobile}
-      maxWidth="md"
+      maxWidth="xl"
       fullWidth
       onClose={(_, reason) => {
         if (reason !== 'backdropClick') {
@@ -113,7 +207,7 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
       slotProps={{
         paper: {
           sx: {
-            ...(!isMobile && { maxWidth: '720px' })
+            ...(!isMobile && { maxWidth: '1400px' })
           },
         },
       }}
@@ -182,7 +276,7 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
               <Skeleton variant="rectangular" height={40} />
               <Skeleton variant="rectangular" height={300} />
             </Box>
-          ) : !lotDetails || lotDetails.length === 0 ? (
+          ) : !localLotDetails || localLotDetails.length === 0 ? (
             <Box
               display="flex"
               justifyContent="center"
@@ -198,7 +292,7 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
               {/* Vista Mobile: Lista */}
               {isMobile ? (
                 <List disablePadding>
-                  {lotDetails.map((detail, index) => {
+                  {localLotDetails.map((detail, index) => {
                     // DEBUG: Ver todos los campos disponibles del detail
                     if (index === 0) {
                       console.log('📋 DEBUG Full detail object:', detail);
@@ -275,8 +369,28 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                             Manager: <strong>{detail.Manager || 'N/A'}</strong>
                           </Typography>
                         </Stack>
+
+                        {/* Verificado */}
+                        {detail.TaskId && (
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <VerifiedIcon
+                              fontSize="small"
+                              color={detail.Verify === true || detail.Verify === 1 ? "success" : "action"}
+                            />
+                            <Typography variant="body2" color="text.secondary">
+                              Verificado:
+                            </Typography>
+                            <Checkbox
+                              checked={detail.Verify === true || detail.Verify === 1}
+                              onChange={() => handleVerifyToggle(detail)}
+                              disabled={verifyLoading === detail.TaskId}
+                              color="success"
+                              size="small"
+                            />
+                          </Stack>
+                        )}
                       </ListItem>
-                      {index < lotDetails.length - 1 && <Divider />}
+                      {index < localLotDetails.length - 1 && <Divider />}
                     </Box>
                     );
                   })}
@@ -350,10 +464,20 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                         >
                           Manager
                         </TableCell>
+                        <TableCell
+                          align="center"
+                          sx={{
+                            backgroundColor: 'primary.main',
+                            color: 'primary.contrastText',
+                            fontWeight: 600
+                          }}
+                        >
+                          Verificado
+                        </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {lotDetails.map((detail, index) => {
+                      {localLotDetails.map((detail, index) => {
                         // DEBUG: Ver todos los campos disponibles del detail (Desktop)
                         if (index === 0) {
                           console.log('🖥️ DEBUG Desktop Full detail object:', detail);
@@ -415,6 +539,21 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
                               {detail.Manager || 'N/A'}
                             </Typography>
                           </TableCell>
+                          <TableCell align="center">
+                            {detail.TaskId ? (
+                              <Checkbox
+                                checked={detail.Verify === true || detail.Verify === 1}
+                                onChange={() => handleVerifyToggle(detail)}
+                                disabled={verifyLoading === detail.TaskId}
+                                color="success"
+                                size="small"
+                              />
+                            ) : (
+                              <Typography variant="caption" color="text.disabled">
+                                N/A
+                              </Typography>
+                            )}
+                          </TableCell>
                         </TableRow>
                         );
                       })}
@@ -453,6 +592,23 @@ export const LotDetailDialog: React.FC<LotDetailDialogProps> = ({
           Cerrar
         </Button>
       </DialogActions>
+
+      {/* Snackbar de Notificación */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };

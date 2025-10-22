@@ -144,14 +144,14 @@ export const TaskContextMenu = ({
               disabled={!canEdit || loading}
             >
               <ListItemIcon>
-                {task.IsComplete === 1 ? (
+                {(task.Completed === 1 || task.Completed === true) ? (
                   <RadioButtonUncheckedIcon fontSize="small" />
                 ) : (
                   <CheckCircleIcon fontSize="small" />
                 )}
               </ListItemIcon>
               <ListItemText>
-                {task.IsComplete === 1
+                {(task.Completed === 1 || task.Completed === true)
                   ? 'Marcar como Pendiente'
                   : 'Marcar como Completada'}
               </ListItemText>

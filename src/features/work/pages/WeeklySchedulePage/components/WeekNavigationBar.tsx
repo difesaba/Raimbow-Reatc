@@ -3,7 +3,8 @@ import { Box, Button, Paper, Stack, Typography, useTheme, useMediaQuery } from '
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  Today as TodayIcon
+  Today as TodayIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
 
 interface WeekNavigationBarProps {
@@ -13,6 +14,7 @@ interface WeekNavigationBarProps {
   onPreviousWeek: () => void;
   onNextWeek: () => void;
   onCurrentWeek: () => void;
+  onRefresh: () => void;
 }
 
 /**
@@ -25,7 +27,8 @@ export const WeekNavigationBar = ({
   loading,
   onPreviousWeek,
   onNextWeek,
-  onCurrentWeek
+  onCurrentWeek,
+  onRefresh
 }: WeekNavigationBarProps) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -68,6 +71,17 @@ export const WeekNavigationBar = ({
               {isMobile ? <TodayIcon /> : 'Hoy'}
             </Button>
           )}
+
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={!isMobile ? <RefreshIcon /> : undefined}
+            onClick={onRefresh}
+            disabled={loading}
+            color="secondary"
+          >
+            {isMobile ? <RefreshIcon /> : 'Refrescar'}
+          </Button>
 
           <Button
             variant="outlined"

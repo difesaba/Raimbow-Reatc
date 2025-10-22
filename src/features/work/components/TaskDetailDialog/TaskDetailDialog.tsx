@@ -13,7 +13,9 @@ import {
   Paper,
   IconButton,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -23,7 +25,8 @@ import {
   Business as BusinessIcon,
   Assignment as AssignmentIcon,
   Info as InfoIcon,
-  Edit as EditIcon
+  Edit as EditIcon,
+  Verified as VerifiedIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -32,8 +35,8 @@ import type { TaskDetailDialogProps } from './TaskDetailDialog.types';
 /**
  * 🏷️ Obtener estado de la tarea con color apropiado
  */
-const getTaskStatus = (task: { IsComplete?: number; Completed?: number | boolean; Manager?: string }): { label: string; color: 'success' | 'primary' | 'warning' | 'default' } => {
-  if (task.IsComplete === 1 || task.Completed === 1) {
+const getTaskStatus = (task: { Completed?: number | boolean; Manager?: string }): { label: string; color: 'success' | 'primary' | 'warning' | 'default' } => {
+  if (task.Completed === 1 || task.Completed === true) {
     return { label: 'Completada', color: 'success' };
   }
   if (task.Manager) {
@@ -65,7 +68,8 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
   onClose,
   onEdit,
   onAssignManager,
-  onEditDate
+  onEditDate,
+  onVerifyChange
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -74,6 +78,13 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
   if (!task) return null;
 
   const status = getTaskStatus(task);
+
+  // Handler para cambio de verificación
+  const handleVerifyToggle = async () => {
+    if (onVerifyChange && task) {
+      await onVerifyChange(task);
+    }
+  };
 
   return (
     <Dialog
@@ -307,7 +318,41 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
             </Stack>
           </Paper>
 
-          {/* ============ SECCIÓN 4: CARACTERÍSTICAS DEL LOTE ============ */}
+          {/* ============ SECCIÓN 4: VERIFICACIÓN ============ */}
+          {task.TaskId && onVerifyChange && (
+            <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
+              <Stack spacing={2}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <VerifiedIcon color="primary" sx={{ fontSize: { xs: 24, sm: 'medium' } }} />
+                  <Typography variant="h6" fontWeight={600} sx={{ fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                    Verificación
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={task.Verify === true || task.Verify === 1}
+                        onChange={handleVerifyToggle}
+                        color="success"
+                      />
+                    }
+                    label={
+                      <Typography variant="body2">
+                        Información verificada y correcta
+                      </Typography>
+                    }
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block" ml={4}>
+                    Marcar cuando se haya verificado que toda la información de la tarea es correcta
+                  </Typography>
+                </Box>
+              </Stack>
+            </Paper>
+          )}
+
+          {/* ============ SECCIÓN 5: CARACTERÍSTICAS DEL LOTE ============ */}
           {(task.SFQuantity || task.Colors || task.DoorDesc || task.StainDesc) && (
             <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
               <Stack spacing={2}>
@@ -367,7 +412,7 @@ export const TaskDetailDialog: React.FC<TaskDetailDialogProps> = ({
             </Paper>
           )}
 
-          {/* ============ SECCIÓN 5: OBSERVACIONES ============ */}
+          {/* ============ SECCIÓN 6: OBSERVACIONES ============ */}
           {task.Obs && (
             <Paper elevation={0} sx={{ p: { xs: 1.5, sm: 2 }, backgroundColor: 'action.hover' }}>
               <Stack spacing={1}>

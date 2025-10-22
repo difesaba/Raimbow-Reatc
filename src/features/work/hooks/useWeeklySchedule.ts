@@ -284,6 +284,19 @@ export const useWeeklySchedule = (subdivisionId?: number) => {
   }, []);
 
   /**
+   * 🔄 Actualizar una tarea específica en el estado local (optimistic update)
+   */
+  const updateTaskInState = useCallback((taskId: number, updates: Partial<LotDetail>) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.TaskId === taskId
+          ? { ...task, ...updates }
+          : task
+      )
+    );
+  }, []);
+
+  /**
    * 🔄 Refrescar datos de la semana actual
    */
   const refresh = useCallback(() => {
@@ -332,6 +345,7 @@ export const useWeeklySchedule = (subdivisionId?: number) => {
     goToPreviousWeek,
     goToNextWeek,
     goToCurrentWeek,
-    refresh
+    refresh,
+    updateTaskInState
   };
 };

@@ -124,12 +124,12 @@ const getProgressColor = (progress: string | number): ColorConfig => {
  */
 const getTaskStatus = (task: LotDetail): { label: string; color: 'success' | 'primary' | 'warning' | 'default' } => {
   // Completada
-  if (task.IsComplete === 1 || task.Completed === 1) {
+  if (task.Completed === 1 || task.Completed === true) {
     return { label: 'Completada', color: 'success' };
   }
 
-  // En progreso (tiene manager asignado)
-  if (task.Manager) {
+  // En progreso (tiene manager asignado y no completada)
+  if (task.Manager && (task.Completed === 0 || !task.Completed || task.Completed === null)) {
     return { label: 'En Progreso', color: 'primary' };
   }
 

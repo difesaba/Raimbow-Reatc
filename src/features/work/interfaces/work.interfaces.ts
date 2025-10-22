@@ -19,6 +19,7 @@ export interface Work {
   StartDate?: string;
   EndDate?: string;
   Completed?: boolean;
+  Verify?: boolean;
   CreatedAt?: string;
   UpdatedAt?: string;
 }
@@ -44,6 +45,7 @@ export interface UpdateWorkDTO {
   StartDate: string;
   EndDate: string;
   Completed: boolean;
+  Verify?: boolean;
   Obs: string;
   UserRainbow: number;
   User: number;
@@ -93,7 +95,8 @@ export interface LotDetail {
   StartDate: string;
   EndDateTask: string;
   WorkDays: number;
-  Completed: number;
+  Completed: number | boolean; // Puede ser 0/1 (number) o false/true (boolean)
+  Verify?: number | boolean; // Puede ser 0/1 (number) o false/true (boolean)
   CreatedAt: string;
   UserCreate: number;
   UpdatedAt: string;

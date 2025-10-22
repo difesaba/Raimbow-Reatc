@@ -10,7 +10,10 @@ import { hasValidTaskId } from '../utils/taskMappers';
  * 🎯 Hook para acciones sobre tareas
  * Encapsula toda la lógica de actualización y manejo de errores
  */
-export const useWorkActions = (onSuccess: () => void) => {
+export const useWorkActions = (
+  onSuccess: () => void,
+  updateTaskInState?: (taskId: number, updates: Partial<LotDetail>) => void
+) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastNotification, setLastNotification] = useState<NotificationResult | null>(null);
@@ -19,7 +22,7 @@ export const useWorkActions = (onSuccess: () => void) => {
   const currentUserId = 1; // Temporal, debería venir del auth context
 
   /**
-   * ✅ Toggle estado completado
+   * ✅ Toggle estado completado con actualización optimista
    */
   const toggleCompleted = useCallback(async (task: LotDetail): Promise<boolean> => {
     if (!hasValidTaskId(task)) {
@@ -30,16 +33,24 @@ export const useWorkActions = (onSuccess: () => void) => {
     setLoading(true);
     setError(null);
 
-    try {
-      // Invertir el estado actual
-      const newCompletedState = !(task.IsComplete === 1);
+    // Invertir el estado actual
+    const newCompletedState = !(task.Completed === 1 || task.Completed === true);
 
-      console.log('🔄 Toggling task completed state:', {
-        TaskId: task.TaskId,
-        CurrentState: task.IsComplete,
-        NewState: newCompletedState
+    console.log('🔄 Toggling task completed state (optimistic):', {
+      TaskId: task.TaskId,
+      CurrentState: task.Completed,
+      NewState: newCompletedState
+    });
+
+    // 1️⃣ ACTUALIZACIÓN OPTIMISTA: Actualizar UI inmediatamente
+    if (updateTaskInState) {
+      updateTaskInState(task.TaskId!, {
+        Completed: newCompletedState ? 1 : 0
       });
+    }
 
+    try {
+      // 2️⃣ Enviar al backend en segundo plano
       await WorkService.updateWork({
         TaskId: task.TaskId!,
         StartDate: getStartDate(task) || formatDateToISO(new Date()),
@@ -50,18 +61,26 @@ export const useWorkActions = (onSuccess: () => void) => {
         User: currentUserId
       });
 
-      console.log('✅ Task completed state updated successfully');
-      onSuccess();
+      console.log('✅ Task completed state updated successfully in backend');
+      // ✅ NO llamar onSuccess() para evitar refresh innecesario
       return true;
     } catch (err: unknown) {
-      console.error('❌ Error toggling completed state:', err);
+      console.error('❌ Error toggling completed state, reverting...', err);
+
+      // 3️⃣ REVERTIR: Si falla el backend, volver al estado original
+      if (updateTaskInState) {
+        updateTaskInState(task.TaskId!, {
+          Completed: task.Completed
+        });
+      }
+
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
       setError(errorMessage || 'Error al actualizar el estado de la tarea');
       return false;
     } finally {
       setLoading(false);
     }
-  }, [currentUserId, onSuccess]);
+  }, [currentUserId, updateTaskInState]);
 
   /**
    * 👤 Asignar manager a tarea
@@ -85,7 +104,7 @@ export const useWorkActions = (onSuccess: () => void) => {
         User: currentUserId,
         StartDate: getStartDate(task) || formatDateToISO(new Date()),
         EndDate: getEndDate(task) || formatDateToISO(new Date()),
-        Completed: task.IsComplete === 1,
+        Completed: task.Completed === 1,
         Obs: task.Obs || ''
       });
 
@@ -135,7 +154,7 @@ export const useWorkActions = (onSuccess: () => void) => {
         TaskId: task.TaskId!,
         StartDate: newStartDate,
         EndDate: newEndDate,
-        Completed: task.IsComplete === 1,
+        Completed: task.Completed === 1,
         Obs: task.Obs || '',
         UserRainbow: task.UserId || 0,
         User: currentUserId
@@ -168,6 +187,68 @@ export const useWorkActions = (onSuccess: () => void) => {
     setLastNotification(null);
   }, []);
 
+  /**
+   * ✅ Toggle estado verificado con actualización optimista
+   */
+  const toggleVerify = useCallback(async (task: LotDetail): Promise<boolean> => {
+    if (!hasValidTaskId(task)) {
+      setError('No se puede actualizar la verificación de una tarea sin ID');
+      return false;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    // Invertir el estado actual
+    const newVerifyState = !(task.Verify === 1 || task.Verify === true);
+
+    console.log('🔄 Toggling task verify state (optimistic):', {
+      TaskId: task.TaskId,
+      CurrentState: task.Verify,
+      NewState: newVerifyState
+    });
+
+    // 1️⃣ ACTUALIZACIÓN OPTIMISTA: Actualizar UI inmediatamente
+    if (updateTaskInState) {
+      updateTaskInState(task.TaskId!, {
+        Verify: newVerifyState ? 1 : 0
+      });
+    }
+
+    try {
+      // 2️⃣ Enviar al backend en segundo plano
+      await WorkService.updateWork({
+        TaskId: task.TaskId!,
+        StartDate: getStartDate(task) || formatDateToISO(new Date()),
+        EndDate: getEndDate(task) || formatDateToISO(new Date()),
+        Completed: task.Completed === 1,
+        Verify: newVerifyState,
+        Obs: task.Obs || '',
+        UserRainbow: task.UserId || 0,
+        User: currentUserId
+      });
+
+      console.log('✅ Task verify state updated successfully in backend');
+      // ✅ NO llamar onSuccess() para evitar refresh innecesario
+      return true;
+    } catch (err: unknown) {
+      console.error('❌ Error toggling verify state, reverting...', err);
+
+      // 3️⃣ REVERTIR: Si falla el backend, volver al estado original
+      if (updateTaskInState) {
+        updateTaskInState(task.TaskId!, {
+          Verify: task.Verify
+        });
+      }
+
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      setError(errorMessage || 'Error al actualizar el estado de verificación');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUserId, updateTaskInState]);
+
   return {
     loading,
     error,
@@ -175,6 +256,7 @@ export const useWorkActions = (onSuccess: () => void) => {
     toggleCompleted,
     assignManager,
     updateDates,
+    toggleVerify,
     clearError,
     clearNotification
   };

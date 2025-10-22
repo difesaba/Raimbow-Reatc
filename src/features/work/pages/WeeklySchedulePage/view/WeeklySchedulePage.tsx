@@ -66,7 +66,8 @@ export const WeeklySchedulePage = () => {
     goToPreviousWeek,
     goToNextWeek,
     goToCurrentWeek,
-    refresh
+    refresh,
+    updateTaskInState
   } = useWeeklySchedule(selectedSubdivision?.SubdivisionId);
 
   // Hook de autenticación para validar roles
@@ -81,9 +82,10 @@ export const WeeklySchedulePage = () => {
     toggleCompleted,
     assignManager,
     updateDates,
+    toggleVerify,
     clearError,
     clearNotification
-  } = useWorkActions(refresh);
+  } = useWorkActions(refresh, updateTaskInState);
 
   // Hook para días expandidos en móvil
   const { expandedDays, toggleDay } = useExpandedDays(weekRange, weekDays);
@@ -134,20 +136,20 @@ export const WeeklySchedulePage = () => {
     // 1. Filtrar por estado (all/pending/in_progress/completed)
     switch (filterStatus) {
       case 'pending':
-        // Pendientes: Sin asignar y no completadas
+        // Pendientes: Sin asignar Y no completadas
         filtered = filtered.filter(task =>
-          !task.UserId && (task.IsComplete !== 1 && task.Completed !== 1)
+          !task.UserId && (task.Completed === 0 || !task.Completed || task.Completed === null)
         );
         break;
       case 'in_progress':
-        // En progreso: Asignadas pero no completadas
+        // En progreso: Asignadas Y no completadas
         filtered = filtered.filter(task =>
-          task.UserId && (task.IsComplete !== 1 && task.Completed !== 1)
+          task.UserId && (task.Completed === 0 || !task.Completed || task.Completed === null)
         );
         break;
       case 'completed':
-        // Completadas: Marcadas como completadas
-        filtered = filtered.filter(task => task.IsComplete === 1 || task.Completed === 1);
+        // Completadas: Completed = 1 o true
+        filtered = filtered.filter(task => task.Completed === 1 || task.Completed === true);
         break;
       case 'all':
       default:
@@ -209,15 +211,12 @@ export const WeeklySchedulePage = () => {
     setContextMenu(null);
   }, []);
 
-  const handleToggleCompleted = useCallback(async () => {
-    if (selectedTask) {
-      const success = await toggleCompleted(selectedTask);
-      if (success) {
-        setSelectedTask(null);
-        handleCloseContextMenu();
-      }
+  const handleToggleCompleted = useCallback(async (task: LotDetail) => {
+    const success = await toggleCompleted(task);
+    if (success) {
+      handleCloseContextMenu();
     }
-  }, [selectedTask, toggleCompleted, handleCloseContextMenu]);
+  }, [toggleCompleted, handleCloseContextMenu]);
 
   const handleConfirmAssignment = useCallback(async (manager: Manager) => {
     if (selectedTask) {
@@ -238,6 +237,10 @@ export const WeeklySchedulePage = () => {
       }
     }
   }, [selectedTask, updateDates]);
+
+  const handleVerifyChange = useCallback(async (task: LotDetail) => {
+    await toggleVerify(task);
+  }, [toggleVerify]);
 
   // Combinar errores
   const displayError = actionError || weekError?.message;
@@ -263,6 +266,7 @@ export const WeeklySchedulePage = () => {
           onPreviousWeek={goToPreviousWeek}
           onNextWeek={goToNextWeek}
           onCurrentWeek={goToCurrentWeek}
+          onRefresh={refresh}
         />
 
         {/* Filtros */}
@@ -398,9 +402,7 @@ export const WeeklySchedulePage = () => {
           }}
           onToggleCompleted={() => {
             if (contextMenu) {
-              setSelectedTask(contextMenu.task);
-              handleCloseContextMenu();
-              handleToggleCompleted();
+              handleToggleCompleted(contextMenu.task);
             }
           }}
         />
@@ -441,6 +443,7 @@ export const WeeklySchedulePage = () => {
             setDetailDialogOpen(false);
             setEditDateDialogOpen(true);
           }}
+          onVerifyChange={handleVerifyChange}
         />
 
         {/* Task Audit Dialog */}
