@@ -82,13 +82,21 @@ export const dollarsToWords = (amount: number): string => {
 
 /**
  * Format date from ISO string to readable format
+ * Handles timezone issues by parsing the date components directly
  */
 export const formatDate = (isoDate: string): string => {
-  const date = new Date(isoDate.replace('T00:00:00.000Z', ''));
+  // Extract date components from ISO string (YYYY-MM-DD)
+  const dateOnly = isoDate.split('T')[0];
+  const [year, month, day] = dateOnly.split('-').map(Number);
+
+  // Create date using UTC to avoid timezone offset issues
+  const date = new Date(Date.UTC(year, month - 1, day));
+
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'UTC' // Force UTC to prevent timezone conversion
   }).format(date);
 };
 
