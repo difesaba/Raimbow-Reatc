@@ -112,21 +112,29 @@ export const useAuth = (): UseAuthReturn => {
 
   /**
    * Get user display name
+   * Supports multiple field naming conventions:
+   * - Spanish: nombre
+   * - PascalCase: FirstName, LastName (backend format)
+   * - camelCase: firstName, lastName
    */
   const displayName = user
     ? user.nombre ||
-      `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+      `${(user as any).FirstName || user.firstName || ''} ${(user as any).LastName || user.lastName || ''}`.trim() ||
       user.email ||
       'Usuario'
     : '';
 
   /**
    * Get user initials for avatar
+   * Supports multiple field naming conventions:
+   * - Spanish: nombre
+   * - PascalCase: FirstName, LastName (backend format)
+   * - camelCase: firstName, lastName
    */
   const initials = (() => {
     if (!user) return '';
 
-    // Try to get initials from nombre
+    // Try to get initials from nombre (full name in Spanish)
     if (user.nombre) {
       const parts = user.nombre.split(' ').filter(Boolean);
       if (parts.length >= 2) {
@@ -135,9 +143,17 @@ export const useAuth = (): UseAuthReturn => {
       return parts[0]?.substring(0, 2).toUpperCase() || '';
     }
 
-    // Try firstName and lastName
-    if (user.firstName && user.lastName) {
-      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    // Try FirstName and LastName (PascalCase - backend format)
+    const firstName = (user as any).FirstName || user.firstName;
+    const lastName = (user as any).LastName || user.lastName;
+
+    if (firstName && lastName) {
+      return `${firstName[0]}${lastName[0]}`.toUpperCase();
+    }
+
+    // Fallback: single name (use first 2 letters)
+    if (firstName) {
+      return firstName.substring(0, 2).toUpperCase();
     }
 
     // Fallback to email

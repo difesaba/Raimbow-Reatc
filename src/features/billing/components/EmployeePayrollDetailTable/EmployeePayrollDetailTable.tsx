@@ -52,13 +52,20 @@ export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProp
     }).format(value);
   };
 
-  // Format date from ISO string
+  // Format date from ISO string (handles timezone issues)
   const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
+    // Extract date components from ISO string (YYYY-MM-DD)
+    const dateOnly = dateString.split('T')[0];
+    const [year, month, day] = dateOnly.split('-').map(Number);
+
+    // Create date using UTC to avoid timezone offset issues
+    const date = new Date(Date.UTC(year, month - 1, day));
+
     return new Intl.DateTimeFormat('es-CO', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
+      timeZone: 'UTC', // Force UTC to prevent timezone conversion
     }).format(date);
   };
 
