@@ -7,33 +7,116 @@ import type { TaskBarProps } from './TaskBar.types';
 import type { LotDetail } from '../../interfaces/work.interfaces';
 
 /**
- * 🎨 Generar color consistente basado en el nombre del progreso
- * El mismo string siempre retorna el mismo color
+ * 🎨 Configuración de color personalizado
+ * Estructura que define un color con sus variantes y texto de contraste
  */
-const getProgressColor = (progress: string | number): string => {
-  if (!progress) return 'primary';
+interface ColorConfig {
+  main: string;         // Color principal (hexadecimal)
+  dark: string;         // Variante oscura (hexadecimal)
+  light: string;        // Variante clara (hexadecimal)
+  contrastText: string; // Color de texto que contrasta (hexadecimal)
+}
 
-  // Convertir a string si es número
-  const progressStr = String(progress);
+/**
+ * 🎨 Paleta de colores hexadecimales personalizados para cada tarea
+ * Colores altamente diferenciados para máxima distinción visual
+ */
+const TASK_COLORS: Record<string, ColorConfig> = {
+  'buttajuy': {
+    main: '#2196F3',      // 🔵 AZUL BRILLANTE (Material Blue 500)
+    dark: '#1976D2',
+    light: '#64B5F6',
+    contrastText: '#FFFFFF'
+  },
+  'drywall checkout': {
+    main: '#E91E63',      // 💗 ROSA FUERTE (Material Pink 500)
+    dark: '#C2185B',
+    light: '#F06292',
+    contrastText: '#FFFFFF'
+  },
+  'drywall': {
+    main: '#00BCD4',      // 🔷 CYAN BRILLANTE (Material Cyan 500)
+    dark: '#0097A7',
+    light: '#4DD0E1',
+    contrastText: '#FFFFFF'
+  },
+  'paint': {
+    main: '#4CAF50',      // 🟢 VERDE BRILLANTE (Material Green 500)
+    dark: '#388E3C',
+    light: '#81C784',
+    contrastText: '#FFFFFF'
+  },
+  'stain': {
+    main: '#FF9800',      // 🟠 NARANJA VIBRANTE (Material Orange 500)
+    dark: '#F57C00',
+    light: '#FFB74D',
+    contrastText: '#000000'
+  },
+  'trim': {
+    main: '#F44336',      // 🔴 ROJO BRILLANTE (Material Red 500)
+    dark: '#D32F2F',
+    light: '#EF5350',
+    contrastText: '#FFFFFF'
+  },
+  'prime': {
+    main: '#8BC34A',      // 🍏 VERDE LIMA (Material Light Green 500)
+    dark: '#689F38',
+    light: '#AED581',
+    contrastText: '#000000'
+  },
+  'bluetape': {
+    main: '#03A9F4',      // 🔹 AZUL CIELO (Material Light Blue 500)
+    dark: '#0288D1',
+    light: '#4FC3F7',
+    contrastText: '#FFFFFF'
+  },
+  'blue tape': {
+    main: '#03A9F4',      // 🔹 AZUL CIELO (variante con espacio)
+    dark: '#0288D1',
+    light: '#4FC3F7',
+    contrastText: '#FFFFFF'
+  }
+};
 
-  // Generar hash del string
+/**
+ * 🎨 Paleta de colores fallback para tareas no mapeadas
+ * Se usa cuando no hay un mapeo explícito
+ */
+const DEFAULT_COLORS: ColorConfig[] = [
+  { main: '#9C27B0', dark: '#7B1FA2', light: '#BA68C8', contrastText: '#FFFFFF' }, // 🟣 PÚRPURA
+  { main: '#673AB7', dark: '#512DA8', light: '#9575CD', contrastText: '#FFFFFF' }, // 🟪 ÍNDIGO OSCURO
+  { main: '#3F51B5', dark: '#303F9F', light: '#7986CB', contrastText: '#FFFFFF' }, // 🔵 ÍNDIGO
+  { main: '#009688', dark: '#00796B', light: '#4DB6AC', contrastText: '#FFFFFF' }, // 🟢 VERDE AZULADO
+  { main: '#FFEB3B', dark: '#FBC02D', light: '#FFF176', contrastText: '#000000' }, // 🟡 AMARILLO
+  { main: '#FF5722', dark: '#E64A19', light: '#FF8A65', contrastText: '#FFFFFF' }, // 🟠 NARANJA ROJIZO
+  { main: '#795548', dark: '#5D4037', light: '#A1887F', contrastText: '#FFFFFF' }, // 🟤 CAFÉ
+  { main: '#607D8B', dark: '#455A64', light: '#90A4AE', contrastText: '#FFFFFF' }  // ⚫ GRIS AZULADO
+];
+
+/**
+ * 🎨 Generar color consistente basado en el nombre del progreso
+ * 1. Verifica mapeo explícito primero (colores personalizados)
+ * 2. Si no existe, usa algoritmo de hash con paleta fallback
+ */
+const getProgressColor = (progress: string | number): ColorConfig => {
+  if (!progress) return DEFAULT_COLORS[0];
+
+  // Convertir a string y normalizar (lowercase, trim)
+  const progressStr = String(progress).toLowerCase().trim();
+
+  // Verificar si existe un mapeo explícito
+  if (TASK_COLORS[progressStr]) {
+    return TASK_COLORS[progressStr];
+  }
+
+  // Fallback: Generar hash del string para asignación automática
   let hash = 0;
   for (let i = 0; i < progressStr.length; i++) {
     hash = progressStr.charCodeAt(i) + ((hash << 5) - hash);
   }
 
-  // Paleta de colores de MUI
-  const colors = [
-    'primary',
-    'secondary',
-    'success',
-    'info',
-    'warning',
-    'error'
-  ];
-
   // Retornar color basado en el hash
-  return colors[Math.abs(hash) % colors.length];
+  return DEFAULT_COLORS[Math.abs(hash) % DEFAULT_COLORS.length];
 };
 
 /**
@@ -128,8 +211,8 @@ export const TaskBar: React.FC<TaskBarProps> = ({
         onClick={handleClick}
         sx={{
           gridColumn: isMobile ? 'auto' : `${gridColumnStart} / span ${gridColumnSpan}`,
-          backgroundColor: `${color}.main`,
-          color: `${color}.contrastText`,
+          backgroundColor: color.main,
+          color: color.contrastText,
           borderRadius: 1,
           p: 1.5,
           minHeight: 85,
@@ -139,13 +222,13 @@ export const TaskBar: React.FC<TaskBarProps> = ({
           cursor: onClick ? 'pointer' : 'default',
           overflow: 'hidden',
           border: 2,
-          borderColor: `${color}.dark`,
+          borderColor: color.dark,
           transition: 'all 0.2s ease-in-out',
           boxSizing: 'border-box',
           '&:hover': onClick ? {
             transform: 'translateY(-2px)',
             boxShadow: 4,
-            borderColor: `${color}.main`,
+            borderColor: color.light,
           } : undefined,
         }}
       >
