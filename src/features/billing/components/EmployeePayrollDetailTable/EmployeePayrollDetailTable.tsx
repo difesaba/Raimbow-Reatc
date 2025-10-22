@@ -31,6 +31,7 @@ import {
   Restaurant as LunchIcon,
 } from '@mui/icons-material';
 import type { EmployeePayrollDetailTableProps } from './EmployeePayrollDetailTable.types';
+import { formatDateTime } from '../../utils/payroll.utils';
 
 export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProps> = ({
   details,
@@ -94,6 +95,16 @@ export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProp
             </Stack>
 
             <Divider sx={{ mb: 1.5 }} />
+
+            {/* Creation Date */}
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography variant="caption" color="text.secondary">
+                Fecha de Registro
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {formatDateTime(row.CreateDate)}
+              </Typography>
+            </Stack>
 
             {/* Time Schedule */}
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
@@ -173,6 +184,9 @@ export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProp
             <TableCell>
               <Typography variant="subtitle2">Fecha</Typography>
             </TableCell>
+            <TableCell>
+              <Typography variant="subtitle2">Fecha Creación</Typography>
+            </TableCell>
             <TableCell align="center">
               <Typography variant="subtitle2">Entrada</Typography>
             </TableCell>
@@ -210,6 +224,11 @@ export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProp
               <TableCell>
                 <Typography variant="body2">
                   {formatDate(row.DateHour)}
+                </Typography>
+              </TableCell>
+              <TableCell>
+                <Typography variant="body2" color="text.secondary">
+                  {formatDateTime(row.CreateDate)}
                 </Typography>
               </TableCell>
               <TableCell align="center">
@@ -255,7 +274,7 @@ export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProp
         {summary && (
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={5}>
+              <TableCell colSpan={6}>
                 <Typography variant="subtitle2">
                   TOTALES DEL PERÍODO
                 </Typography>
@@ -306,7 +325,7 @@ export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProp
           <Table>
             <TableHead>
               <TableRow>
-                {['Día', 'Fecha', 'Entrada', 'Salida', 'Almuerzo', 'Horas', 'Tarifa', 'Total'].map((header) => (
+                {['Día', 'Fecha', 'Fecha Creación', 'Entrada', 'Salida', 'Almuerzo', 'Horas', 'Tarifa', 'Total'].map((header) => (
                   <TableCell key={header}>
                     <Skeleton width="100%" />
                   </TableCell>
@@ -316,7 +335,7 @@ export const EmployeePayrollDetailTable: React.FC<EmployeePayrollDetailTableProp
             <TableBody>
               {[1, 2, 3, 4, 5].map((row) => (
                 <TableRow key={row}>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((col) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((col) => (
                     <TableCell key={col}>
                       <Skeleton width="100%" />
                     </TableCell>

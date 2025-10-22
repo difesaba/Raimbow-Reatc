@@ -30,7 +30,7 @@ import {
   Restaurant as LunchIcon
 } from '@mui/icons-material';
 import type { PayrollDetailModalProps } from '../../interfaces/payroll.interfaces';
-import { formatCurrency, formatDate } from '../../utils/payroll.utils';
+import { formatCurrency, formatDate, formatDateTime } from '../../utils/payroll.utils';
 
 /**
  * Modal component displaying detailed daily breakdown for an employee
@@ -91,6 +91,16 @@ export const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({
               </Stack>
 
               <Divider />
+
+              {/* Creation Date */}
+              <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
+                <Typography variant="caption" color="textSecondary">
+                  Fecha de Registro
+                </Typography>
+                <Typography variant="caption" color="textSecondary">
+                  {formatDateTime(day.CreateDate)}
+                </Typography>
+              </Stack>
 
               {/* Schedule */}
               <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1}>
@@ -202,6 +212,7 @@ export const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({
             <TableRow>
               <TableCell>Día</TableCell>
               <TableCell>Fecha</TableCell>
+              <TableCell>Fecha Creación</TableCell>
               <TableCell align="center">Horario</TableCell>
               <TableCell align="center">Almuerzo</TableCell>
               <TableCell align="right">Horas</TableCell>
@@ -220,6 +231,11 @@ export const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({
                 <TableCell>
                   <Typography variant="body2">
                     {formatDate(day.DateHour)}
+                  </Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography variant="body2">
+                    {formatDateTime(day.CreateDate)}
                   </Typography>
                 </TableCell>
                 <TableCell align="center">

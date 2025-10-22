@@ -50,6 +50,9 @@ export interface PayrollDayDetail {
 
   /** Pago total del día en USD */
   Total: number;
+
+  /** Fecha de creación del registro (formato smalldatetime del backend) */
+  CreateDate: string;
 }
 
 // ==================== REQUEST INTERFACES ====================

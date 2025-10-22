@@ -101,6 +101,36 @@ export const formatDate = (isoDate: string): string => {
 };
 
 /**
+ * Format date and time from ISO string to readable format with full precision
+ * Handles timezone issues by parsing date components directly
+ * Format: DD/MM/YYYY HH:mm:ss
+ */
+export const formatDateTime = (isoDate: string): string => {
+  // Split the ISO string to extract date and time components
+  const [datePart, timePart] = isoDate.split('T');
+  const [year, month, day] = datePart.split('-').map(Number);
+
+  // Extract time components (handle both with and without timezone info)
+  const timeOnly = timePart ? timePart.split('.')[0].split('+')[0].split('Z')[0] : '00:00:00';
+  const [hour, minute, second] = timeOnly.split(':').map(Number);
+
+  // Create date using UTC to avoid timezone offset issues
+  const date = new Date(Date.UTC(year, month - 1, day, hour || 0, minute || 0, second || 0));
+
+  // Format using Intl.DateTimeFormat with UTC timezone to prevent conversion
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false, // Use 24-hour format
+    timeZone: 'UTC' // Force UTC to prevent timezone conversion
+  }).format(date);
+};
+
+/**
  * Get the current week's date range (Monday to Sunday)
  */
 /*

@@ -17,6 +17,8 @@ export interface PayrollDayDetail {
   Unit: number;
   /** Total payment for the day */
   Total: number;
+  /** Creation date of the record (smalldatetime from backend) */
+  CreateDate: string;
 }
 
 export interface PayrollSummary {
