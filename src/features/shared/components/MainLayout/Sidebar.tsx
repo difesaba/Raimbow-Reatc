@@ -22,6 +22,7 @@ import {
   People as PeopleIcon,
   Security as SecurityIcon,
   CalendarMonth as CalendarMonthIcon,
+  Schedule as ScheduleIcon,
   ExpandLess,
   ExpandMore,
 } from '@mui/icons-material';
@@ -86,6 +87,11 @@ const navItems: NavItem[] = [
         text: 'Reporte Individual',
         icon: <PersonSearchIcon />,
         path: '/facturacion/reporte',
+      },
+      {
+        text: 'Registrar Horas',
+        icon: <ScheduleIcon />,
+        path: '/facturacion/registrar-horas',
       },
     ],
   },

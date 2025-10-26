@@ -165,3 +165,109 @@ export interface PayrollDetailModalProps {
   /** Estado de carga para los detalles */
   loading?: boolean;
 }
+
+// ==================== DATE HOUR MANAGEMENT INTERFACES ====================
+
+/**
+ * 🕐 Registro completo de horas trabajadas por día
+ * Endpoint: GET /api/fac/datehour
+ * Corresponde a la respuesta del backend con todos los campos
+ */
+export interface DateHourRecord {
+  /** ID único del registro */
+  Id: number;
+
+  /** ID del usuario/empleado */
+  IdUser: number;
+
+  /** Nombre completo del usuario (LastName + FirstName del backend) */
+  UserName: string;
+
+  /** Fecha y hora del registro (ISO format) */
+  DateHour: string;
+
+  /** Hora de inicio en formato HH:MM:SS */
+  TimeIni: string;
+
+  /** Hora de fin en formato HH:MM:SS */
+  TimeEnd: string;
+
+  /** Cantidad de horas calculadas (antes de descontar almuerzo) */
+  CantHour: number;
+
+  /** Minutos de descuento por almuerzo */
+  DiscountHour: number;
+
+  /** Total de horas trabajadas (CantHour - DiscountHour/60) */
+  TotalHour: number;
+
+  /** Tarifa por hora en USD */
+  Unit: number;
+
+  /** Valor total a pagar (TotalHour * Unit) */
+  Total: number;
+
+  /** Fecha de creación del registro en BD */
+  CreateDate: string;
+}
+
+/**
+ * 📝 DTO para crear un nuevo registro de horas
+ * Endpoint: POST /api/fac/datehour
+ * Body params esperados por el backend
+ */
+export interface CreateDateHourDTO {
+  /** ID del usuario */
+  user: number;
+
+  /** Fecha del registro (formato: YYYY-MM-DD) */
+  fecha: string;
+
+  /** Hora de inicio (formato: HH:MM) */
+  ini: string;
+
+  /** Hora de fin (formato: HH:MM) */
+  fin: string;
+
+  /** Cantidad de horas trabajadas */
+  cant: number;
+
+  /** Minutos de almuerzo (DiscountHour) */
+  lunch: number;
+}
+
+/**
+ * ✏️ DTO para actualizar un registro existente
+ * Endpoint: PUT /api/fac/datehour/:id
+ * Body params esperados por el backend
+ */
+export interface UpdateDateHourDTO {
+  /** Fecha del registro (formato: YYYY-MM-DD) */
+  fecha: string;
+
+  /** Hora de inicio (formato: HH:MM) */
+  ini: string;
+
+  /** Hora de fin (formato: HH:MM) */
+  fin: string;
+
+  /** Cantidad de horas trabajadas */
+  cant: number;
+
+  /** Minutos de almuerzo (DiscountHour) */
+  lunch: number;
+}
+
+/**
+ * 📊 Totales calculados para un día específico
+ */
+export interface DateHourDayTotals {
+  /** Total de horas trabajadas en el día */
+  totalHours: number;
+
+  /** Valor total a pagar en el día */
+  totalAmount: number;
+
+  /** Cantidad de registros en el día */
+  recordCount: number;
+}

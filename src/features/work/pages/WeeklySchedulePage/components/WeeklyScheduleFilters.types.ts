@@ -1,4 +1,5 @@
 import type { Subdivision } from '../../../interfaces/subdivision.interfaces';
+import type { User } from '../../../../users/interfaces/user.interfaces';
 
 /**
  * Filter status type (assignment filter)
@@ -53,4 +54,19 @@ export interface WeeklyScheduleFiltersProps {
    * Callback cuando cambia la subdivisión seleccionada
    */
   onSubdivisionChange: (subdivision: Subdivision | null) => void;
+
+  /**
+   * Lista de leaders disponibles (usuarios con Leader = true)
+   */
+  leaders: User[];
+
+  /**
+   * Leader seleccionado (null = todos)
+   */
+  selectedLeader: User | null;
+
+  /**
+   * Callback cuando cambia el leader seleccionado
+   */
+  onLeaderChange: (leader: User | null) => void;
 }

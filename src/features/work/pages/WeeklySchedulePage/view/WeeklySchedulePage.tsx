@@ -17,6 +17,7 @@ import { useAuth } from '../../../../auth/hooks/useAuth';
 import { useWorkActions } from '../hooks/useWorkActions';
 import { useExpandedDays } from '../hooks/useExpandedDays';
 import { useSubdivisions } from '../../../hooks/useSubdivisions';
+import { useUsers } from '../../../../users/hooks/useUsers';
 import { formatWeekRange, getDayInfo } from '../utils/dateHelpers';
 import { mapLotDetailToWorkAssignment } from '../utils/taskMappers';
 import { WeekNavigationBar } from '../components/WeekNavigationBar';
@@ -32,6 +33,7 @@ import type { LotDetail } from '../../../interfaces/work.interfaces';
 import type { Manager } from '../../../components/AssignManagerDialog/AssignManagerDialog.types';
 import type { FilterStatus } from '../components/WeeklyScheduleFilters.types';
 import type { Subdivision } from '../../../interfaces/subdivision.interfaces';
+import type { User } from '../../../../users/interfaces/user.interfaces';
 
 /**
  * 📅 Página de Calendario Semanal tipo Gantt
@@ -51,9 +53,14 @@ export const WeeklySchedulePage = () => {
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
   const [progressFilter, setProgressFilter] = useState<string>('all');
   const [selectedSubdivision, setSelectedSubdivision] = useState<Subdivision | null>(null);
+  const [selectedLeader, setSelectedLeader] = useState<User | null>(null);
 
   // Hook de subdivisiones
   const { subdivisions } = useSubdivisions();
+
+  // Hook de usuarios para obtener leaders
+  const { getLeaders } = useUsers();
+  const leaders = getLeaders();
 
   // Hook de calendario semanal (con filtro de subdivisión)
   const {
@@ -167,8 +174,13 @@ export const WeeklySchedulePage = () => {
       });
     }
 
+    // 3. Filtrar por leader seleccionado
+    if (selectedLeader) {
+      filtered = filtered.filter(task => task.UserId === selectedLeader.UserId);
+    }
+
     return filtered;
-  }, [tasksWithGridPositions, filterStatus, progressFilter]);
+  }, [tasksWithGridPositions, filterStatus, progressFilter, selectedLeader]);
 
   // Agrupar tareas por día para vista móvil (memoizado) - usando tareas filtradas
   const tasksByDay = useMemo(() =>
@@ -249,11 +261,11 @@ export const WeeklySchedulePage = () => {
     <Container maxWidth={containerMaxWidth}>
       <Stack spacing={3} paddingY={3}>
         {/* Header */}
-        <Box>
-          <Typography variant={isMobile ? "h5" : "h4"} gutterBottom>
+        <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
+          <Typography variant="h4" gutterBottom>
             Calendario Semanal
           </Typography>
-          <Typography variant={isMobile ? "body2" : "body1"} color="text.secondary">
+          <Typography variant="body1" color="text.secondary">
             Visualiza las tareas programadas en formato Gantt
           </Typography>
         </Box>
@@ -280,6 +292,9 @@ export const WeeklySchedulePage = () => {
           subdivisions={subdivisions}
           selectedSubdivision={selectedSubdivision}
           onSubdivisionChange={setSelectedSubdivision}
+          leaders={leaders}
+          selectedLeader={selectedLeader}
+          onLeaderChange={setSelectedLeader}
         />
 
         {/* Error Alert */}

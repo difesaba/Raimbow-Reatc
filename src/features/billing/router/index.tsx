@@ -14,6 +14,12 @@ const EmployeePayrollReportPage = lazy(() =>
   }))
 );
 
+const DateHourPage = lazy(() =>
+  import('../pages/DateHourPage').then(module => ({
+    default: module.DateHourPage
+  }))
+);
+
 /**
  * Billing module routes configuration
  * These routes should be included in the main app router
@@ -31,6 +37,12 @@ export const billingRoutes: RouteObject[] = [
       {
         path: 'reporte',
         element: <EmployeePayrollReportPage />,
+        // TODO: Add route guard for authentication
+        // loader: requireAuth
+      },
+      {
+        path: 'registrar-horas',
+        element: <DateHourPage />,
         // TODO: Add route guard for authentication
         // loader: requireAuth
       },
@@ -65,6 +77,11 @@ export const billingNavigation = [
         title: 'Reporte Individual',
         path: '/facturacion/reporte',
         icon: 'person_search'
+      },
+      {
+        title: 'Registrar Horas',
+        path: '/facturacion/registrar-horas',
+        icon: 'schedule'
       },
       // TODO: Add more navigation items
       // {

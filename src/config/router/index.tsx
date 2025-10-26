@@ -18,6 +18,7 @@ import { DashboardPage } from '../../features/shared/pages/DashboardPage';
 // Billing Module
 import { ActualPayrollPage } from '../../features/billing/pages/ActualPayrollPage';
 import { EmployeePayrollReportPage } from '../../features/billing/pages/EmployeePayrollReportPage';
+import { DateHourPage } from '../../features/billing/pages/DateHourPage';
 
 // Work Module
 import { LotsBySubdivisionPage } from '../../features/work/pages/LotsBySubdivisionPage';
@@ -84,6 +85,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <MainLayout>
           <EmployeePayrollReportPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/facturacion/registrar-horas',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <DateHourPage />
         </MainLayout>
       </ProtectedRoute>
     ),

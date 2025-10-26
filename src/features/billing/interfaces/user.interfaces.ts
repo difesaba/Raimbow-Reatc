@@ -29,6 +29,9 @@ export interface User {
   /** Tarifa por hora (para empleados) */
   HourlyRate?: number;
 
+  /** Salario/Tarifa del usuario */
+  Salary?: number;
+
   /** Departamento o área del usuario */
   Department?: string;
 

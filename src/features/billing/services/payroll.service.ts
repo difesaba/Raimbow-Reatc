@@ -3,7 +3,10 @@ import type {
   PayrollEmployee,
   PayrollDayDetail,
   PayrollWeekRange,
-  PayrollWeekRequest
+  PayrollWeekRequest,
+  DateHourRecord,
+  CreateDateHourDTO,
+  UpdateDateHourDTO
 } from '../interfaces/payroll.interfaces';
 
 /**
@@ -214,6 +217,160 @@ export class PayrollService {
 
     if (startDate > endDate) {
       throw new Error('La fecha de inicio no puede ser posterior a la fecha de fin');
+    }
+  }
+
+  // ==================== DATE HOUR MANAGEMENT METHODS ====================
+
+  /**
+   * 🕐 Obtener registros de horas por usuario y fecha
+   * @param userId - ID del usuario
+   * @param date - Fecha a consultar (formato: YYYY-MM-DD)
+   * @returns Array de registros de horas para el usuario y fecha especificados
+   * @throws Error con mensaje descriptivo si la petición falla
+   */
+  static async getDateHoursByUserAndDate(
+    userId: number,
+    date: string
+  ): Promise<DateHourRecord[]> {
+    try {
+      if (!userId || userId <= 0) {
+        throw new Error('ID de usuario inválido');
+      }
+
+      if (!this.isValidDateFormat(date)) {
+        throw new Error(`Fecha inválida: ${date}. Use formato YYYY-MM-DD`);
+      }
+
+      const response = await apiService.get(
+        `/api/date/by-date?user=${userId}&fecha=${date}`
+      );
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        `Error al obtener registros de horas para usuario ${userId} en fecha ${date}`;
+
+      console.error('❌ Error fetching date hours:', {
+        endpoint: `${this.BASE_PATH}/datehour`,
+        userId,
+        date,
+        error: errorMessage,
+        status: error.response?.status
+      });
+
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * ➕ Crear un nuevo registro de horas
+   * @param data - Datos del registro a crear
+   * @returns Registro creado con su ID asignado
+   * @throws Error con mensaje descriptivo si la petición falla
+   * @throws Error con status 409 si ya existe un registro para ese día
+   */
+  static async createDateHour(data: CreateDateHourDTO): Promise<DateHourRecord> {
+    try {
+      const response = await apiService.post('/api/date', data);
+      return response.data;
+    } catch (error: any) {
+      // Manejo especial del error 409 (Conflict - registro duplicado)
+      if (error.response?.status === 409) {
+        const errorMessage = error.response?.data?.msg ||
+          'Ya existe un registro para este día';
+
+        console.error('❌ Conflict creating date hour:', {
+          endpoint: '/api/date',
+          data,
+          error: errorMessage
+        });
+
+        const conflictError = new Error(errorMessage) as any;
+        conflictError.status = 409;
+        throw conflictError;
+      }
+
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        'Error al crear registro de horas';
+
+      console.error('❌ Error creating date hour:', {
+        endpoint: '/api/date',
+        data,
+        error: errorMessage,
+        status: error.response?.status
+      });
+
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * ✏️ Actualizar un registro de horas existente
+   * @param id - ID del registro a actualizar
+   * @param data - Datos actualizados
+   * @returns Registro actualizado
+   * @throws Error con mensaje descriptivo si la petición falla
+   */
+  static async updateDateHour(
+    id: number,
+    data: UpdateDateHourDTO
+  ): Promise<DateHourRecord> {
+    try {
+      if (!id || id <= 0) {
+        throw new Error('ID de registro inválido');
+      }
+
+      const response = await apiService.put(
+        `/api/date/${id}`,
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        `Error al actualizar registro de horas ${id}`;
+
+      console.error('❌ Error updating date hour:', {
+        endpoint: `/api/date/${id}`,
+        id,
+        data,
+        error: errorMessage,
+        status: error.response?.status
+      });
+
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * 🗑️ Eliminar un registro de horas
+   * @param id - ID del registro a eliminar
+   * @returns true si la eliminación fue exitosa
+   * @throws Error con mensaje descriptivo si la petición falla
+   */
+  static async deleteDateHour(id: number): Promise<boolean> {
+    try {
+      if (!id || id <= 0) {
+        throw new Error('ID de registro inválido');
+      }
+
+      await apiService.delete(`/api/date/${id}`);
+      return true;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message ||
+        error.message ||
+        `Error al eliminar registro de horas ${id}`;
+
+      console.error('❌ Error deleting date hour:', {
+        endpoint: `/api/date/${id}`,
+        id,
+        error: errorMessage,
+        status: error.response?.status
+      });
+
+      throw new Error(errorMessage);
     }
   }
 }
