@@ -24,6 +24,7 @@ import { WorkAssignmentTable } from '../../components/WorkAssignmentTable';
 import { TaskEditDialog } from '../../components/TaskEditDialog';
 import { TaskAuditDialog } from '../../components/TaskAuditDialog';
 import { TaskDetailDialog } from '../../components/TaskDetailDialog';
+import { useAuthUser } from '../../../auth/store/authStore';
 import type { Work, NotificationResult } from '../../interfaces/work.interfaces';
 import type { TaskEditFormData } from '../../components/TaskEditDialog/TaskEditDialog.types';
 import type { FilterStatus } from '../../components/WorkAssignmentFilters/WorkAssignmentFilters.types';
@@ -52,6 +53,9 @@ interface WorkAssignment extends Work {
 export const WorkAssignmentPage = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Get current authenticated user
+  const currentUser = useAuthUser();
 
   // State management
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -385,7 +389,7 @@ export const WorkAssignmentPage = () => {
           Status: workToEdit.Status || 4,
           UserRainbow: data.manager.id,
           Obs: data.observations,
-          User: 1
+          User: currentUser?.id ? Number(currentUser.id) : 1
         });
 
         // Capturar notificationResult del CREATE
@@ -411,7 +415,7 @@ export const WorkAssignmentPage = () => {
           const updateResponse = await WorkService.updateWork({
             TaskId: newTaskId,
             UserRainbow: data.manager.id,
-            User: 1,
+            User: currentUser?.id ? Number(currentUser.id) : 1,
             StartDate: data.startDate || '',
             EndDate: data.endDate || '',
             Completed: false, // Primera asignación siempre es false
@@ -518,7 +522,7 @@ export const WorkAssignmentPage = () => {
         const updatePayload = {
           TaskId: workToEdit.TaskId,
           UserRainbow: data.manager.id,
-          User: 1,
+          User: currentUser?.id ? Number(currentUser.id) : 1,
           StartDate: data.startDate,
           EndDate: data.endDate,
           Completed: data.completed,
@@ -632,7 +636,7 @@ export const WorkAssignmentPage = () => {
 
       await WorkService.deleteWork({
         taskId: workToDelete.TaskId,
-        userId: 1 // TODO: Get from auth context
+        userId: currentUser?.id ? Number(currentUser.id) : 1
       });
 
       console.log('✅ Work deleted successfully');
