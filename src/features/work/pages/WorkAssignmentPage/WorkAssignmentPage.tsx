@@ -271,7 +271,8 @@ export const WorkAssignmentPage = () => {
           Colors: detail.Colors,
           DoorDesc: detail.DoorDesc,
           StainDesc: detail.StainDesc,
-          Address: detail.address || (detail as any).Address || undefined // Dirección de la obra (intentar minúscula y mayúscula)
+          Address: detail.address || (detail as any).Address || undefined, // Dirección de la obra (intentar minúscula y mayúscula)
+          InitialDate: detail.InitialDate // Fecha inicial del proyecto (para validación de rango)
         };
       });
 

@@ -17,6 +17,7 @@ export interface WorkAssignment extends Work {
   Address?: string; // Dirección de la obra/lote
   UserCreate?: number;
   UserUpdate?: number;
+  InitialDate?: string; // Fecha inicial del proyecto (para referencia)
 }
 
 /**

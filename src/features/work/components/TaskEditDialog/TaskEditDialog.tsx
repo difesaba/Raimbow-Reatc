@@ -110,6 +110,7 @@ export const TaskEditDialog = ({
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [taskDurationDays, setTaskDurationDays] = useState<number>(0); // Duración de la tarea en días
+  const [isDateOutOfRange, setIsDateOutOfRange] = useState(false); // Indicador si la fecha está fuera del rango del proyecto
 
   // Completed state
   const [completed, setCompleted] = useState(false);
@@ -286,6 +287,7 @@ export const TaskEditDialog = ({
     setObservations('');
     setError(null);
     setNotificationResult(null);
+    setIsDateOutOfRange(false);
   };
 
   /**
@@ -296,6 +298,34 @@ export const TaskEditDialog = ({
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+  };
+
+  /**
+   * Check if the selected date is outside the project date range
+   */
+  const checkDateOutOfRange = (selectedDate: Date): boolean => {
+    if (!work || !selectedDate) return false;
+
+    // Parse project dates without timezone conversion
+    const parseProjectDate = (dateStr: string | undefined): Date | null => {
+      if (!dateStr || dateStr === '') return null;
+      const [datePart] = dateStr.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    };
+
+    const projectStartDate = parseProjectDate(work.InitialDate);
+    const projectEndDate = parseProjectDate(work.EndDate);
+
+    if (!projectStartDate || !projectEndDate) return false;
+
+    // Set time to midnight for comparison
+    const selectedDateOnly = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
+    const projectStartOnly = new Date(projectStartDate.getFullYear(), projectStartDate.getMonth(), projectStartDate.getDate());
+    const projectEndOnly = new Date(projectEndDate.getFullYear(), projectEndDate.getMonth(), projectEndDate.getDate());
+
+    // Check if selected date is before project start or after project end
+    return selectedDateOnly < projectStartOnly || selectedDateOnly > projectEndOnly;
   };
 
   /**
@@ -397,7 +427,7 @@ export const TaskEditDialog = ({
             </Stack>
             <Typography variant={isMobile ? 'caption' : 'body2'} color="text.secondary" mt={0.5}>
               {isFirstAssignment
-                ? 'Selecciona el manager y revisa las fechas del proyecto que se guardarán'
+                ? 'Selecciona el manager y ajusta la fecha de inicio si es necesario'
                 : 'Modifica el manager, fecha de inicio y estado de completado'
               }
             </Typography>
@@ -737,22 +767,13 @@ export const TaskEditDialog = ({
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               <CalendarToday fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
               Fechas de Ejecución
-              {isFirstAssignment ? (
-                <Chip
-                  label="Solo lectura"
-                  size="small"
-                  variant="outlined"
-                  sx={{ ml: 1 }}
-                />
-              ) : (
-                <Chip
-                  label="Fecha fin: Solo lectura"
-                  size="small"
-                  variant="outlined"
-                  color="info"
-                  sx={{ ml: 1 }}
-                />
-              )}
+              <Chip
+                label="Fecha fin: Solo lectura"
+                size="small"
+                variant="outlined"
+                color="info"
+                sx={{ ml: 1 }}
+              />
             </Typography>
 
             <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
@@ -762,11 +783,15 @@ export const TaskEditDialog = ({
                     label="Fecha de inicio"
                     value={startDate}
                     onChange={(newValue) => {
-                      if (newValue && !isFirstAssignment) {
+                      if (newValue) {
                         // Convert to Date if it's a Dayjs object
                         const dateValue = newValue instanceof Date ? newValue : new Date(newValue.toString());
                         setStartDate(dateValue);
                         setError(null);
+
+                        // Check if date is out of project range
+                        const isOutOfRange = checkDateOutOfRange(dateValue);
+                        setIsDateOutOfRange(isOutOfRange);
 
                         // Recalcular fecha final: FechaFin = FechaInicio + (Duración - 1)
                         if (taskDurationDays > 0) {
@@ -784,15 +809,24 @@ export const TaskEditDialog = ({
                         }
                       }
                     }}
-                    disabled={saving || isFirstAssignment}
-                    readOnly={isFirstAssignment}
+                    disabled={saving}
                     format="dd/MM/yyyy"
                     slotProps={{
                       textField: {
                         size: 'small',
                         fullWidth: true,
                         required: !isFirstAssignment,
-                        helperText: isFirstAssignment ? 'Fecha del proyecto' : `Duración: ${taskDurationDays} día${taskDurationDays !== 1 ? 's' : ''}`
+                        helperText: isDateOutOfRange
+                          ? `⚠️ La fecha está fuera del rango del proyecto (${work?.InitialDate ? new Date(work.InitialDate.split('T')[0]).toLocaleDateString('es-ES') : 'N/A'} - ${work?.EndDate ? new Date(work.EndDate.split('T')[0]).toLocaleDateString('es-ES') : 'N/A'})`
+                          : isFirstAssignment
+                            ? `Duración: ${taskDurationDays} día${taskDurationDays !== 1 ? 's' : ''}`
+                            : `Duración: ${taskDurationDays} día${taskDurationDays !== 1 ? 's' : ''}`,
+                        error: isDateOutOfRange,
+                        sx: isDateOutOfRange ? {
+                          '& .MuiFormHelperText-root': {
+                            color: 'warning.main'
+                          }
+                        } : undefined
                       }
                     }}
                   />
@@ -869,20 +903,17 @@ export const TaskEditDialog = ({
           )}
 
           {/* Info Alerts */}
-          {isFirstAssignment ? (
-            <Alert severity="info">
-              <Typography variant="body2">
-                Las fechas mostradas corresponden al proyecto. Se guardarán automáticamente al asignar el manager.
-              </Typography>
-            </Alert>
-          ) : (
-            <Alert severity="info">
-              <Typography variant="body2">
-                Al cambiar la <strong>fecha de inicio</strong>, la fecha de fin se recalcula automáticamente
-                sumando <strong>{taskDurationDays} día{taskDurationDays !== 1 ? 's' : ''}</strong> de duración.
-              </Typography>
-            </Alert>
-          )}
+          <Alert severity="info">
+            <Typography variant="body2">
+              Al cambiar la <strong>fecha de inicio</strong>, la fecha de fin se recalcula automáticamente
+              sumando <strong>{taskDurationDays} día{taskDurationDays !== 1 ? 's' : ''}</strong> de duración.
+              {isFirstAssignment && (
+                <>
+                  {' '}La fecha inicial predeterminada corresponde a la fecha del proyecto.
+                </>
+              )}
+            </Typography>
+          </Alert>
         </Stack>
       </DialogContent>
 
