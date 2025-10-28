@@ -373,8 +373,8 @@ export const WorkAssignmentPage = () => {
       let notificationResult: NotificationResult | undefined;
 
       if (isNewTask) {
-        // CREATE: La tarea no existe, crear nueva
-        console.log('✨ Creating new task:', {
+        // CREATE: La tarea no existe, crear nueva con fechas incluidas
+        console.log('✨ Creating new task with dates:', {
           LotId: workToEdit.LotId,
           Manager: data.manager.name,
           StartDate: data.startDate,
@@ -382,7 +382,7 @@ export const WorkAssignmentPage = () => {
           Completed: data.completed
         });
 
-        // PASO 1: Crear la tarea (sin fechas, solo manager)
+        // PASO 1: Crear la tarea con fechas incluidas
         const createResponse = await WorkService.createWork({
           LotId: workToEdit.LotId!,
           Town: workToEdit.Town!,
@@ -390,7 +390,9 @@ export const WorkAssignmentPage = () => {
           Status: workToEdit.Status || 4,
           UserRainbow: data.manager.id,
           Obs: data.observations,
-          User: currentUser?.id ? Number(currentUser.id) : 1
+          User: currentUser?.id ? Number(currentUser.id) : 1,
+          StartDate: data.startDate || '',
+          EndDate: data.endDate || ''
         });
 
         // Capturar notificationResult del CREATE
@@ -405,9 +407,10 @@ export const WorkAssignmentPage = () => {
 
         console.log('✅ Task created with TaskId:', newTaskId);
 
-        // PASO 2: Si hay fechas, actualizarlas inmediatamente
+        // PASO 2: Actualizar fechas (respaldo - las fechas ya se enviaron en el CREATE)
+        // Este UPDATE se mantiene como redundancia para garantizar que las fechas se guarden
         if (newTaskId && (data.startDate || data.endDate)) {
-          console.log('📅 Updating dates for newly created task:', {
+          console.log('📅 Updating dates (backup) for newly created task:', {
             TaskId: newTaskId,
             StartDate: data.startDate,
             EndDate: data.endDate

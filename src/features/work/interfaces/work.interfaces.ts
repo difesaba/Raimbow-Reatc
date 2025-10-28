@@ -35,6 +35,8 @@ export interface CreateWorkDTO {
   UserRainbow: number;
   Obs: string;
   User: number;
+  StartDate: string; // Fecha de inicio (formato: YYYY-MM-DD)
+  EndDate: string;   // Fecha de fin (formato: YYYY-MM-DD)
 }
 
 /**
