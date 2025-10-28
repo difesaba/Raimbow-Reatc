@@ -383,6 +383,11 @@ export const WorkAssignmentPage = () => {
         });
 
         // PASO 1: Crear la tarea con fechas incluidas
+        // Validar que el usuario de sesión esté disponible
+        if (!currentUser?.UserId) {
+          throw new Error('Usuario de sesión no disponible. Por favor, inicia sesión nuevamente.');
+        }
+
         const createResponse = await WorkService.createWork({
           LotId: workToEdit.LotId!,
           Town: workToEdit.Town!,
@@ -390,7 +395,7 @@ export const WorkAssignmentPage = () => {
           Status: workToEdit.Status || 4,
           UserRainbow: data.manager.id,
           Obs: data.observations,
-          User: currentUser?.id ? Number(currentUser.id) : 1,
+          User: currentUser.UserId,
           StartDate: data.startDate || '',
           EndDate: data.endDate || ''
         });
@@ -419,7 +424,7 @@ export const WorkAssignmentPage = () => {
           const updateResponse = await WorkService.updateWork({
             TaskId: newTaskId,
             UserRainbow: data.manager.id,
-            User: currentUser?.id ? Number(currentUser.id) : 1,
+            User: currentUser.UserId,
             StartDate: data.startDate || '',
             EndDate: data.endDate || '',
             Completed: false, // Primera asignación siempre es false
@@ -523,10 +528,15 @@ export const WorkAssignmentPage = () => {
           throw new Error(errorMsg);
         }
 
+        // Validar que el usuario de sesión esté disponible
+        if (!currentUser?.UserId) {
+          throw new Error('Usuario de sesión no disponible. Por favor, inicia sesión nuevamente.');
+        }
+
         const updatePayload = {
           TaskId: workToEdit.TaskId,
           UserRainbow: data.manager.id,
-          User: currentUser?.id ? Number(currentUser.id) : 1,
+          User: currentUser.UserId,
           StartDate: data.startDate,
           EndDate: data.endDate,
           Completed: data.completed,
@@ -636,11 +646,16 @@ export const WorkAssignmentPage = () => {
     setError(null);
 
     try {
+      // Validar que el usuario de sesión esté disponible
+      if (!currentUser?.UserId) {
+        throw new Error('Usuario de sesión no disponible. Por favor, inicia sesión nuevamente.');
+      }
+
       console.log('🗑️ Deleting work:', workToDelete.TaskId);
 
       await WorkService.deleteWork({
         taskId: workToDelete.TaskId,
-        userId: currentUser?.id ? Number(currentUser.id) : 1
+        userId: currentUser.UserId
       });
 
       console.log('✅ Work deleted successfully');

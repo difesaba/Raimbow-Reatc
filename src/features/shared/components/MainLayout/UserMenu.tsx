@@ -128,7 +128,7 @@ export const UserMenu: React.FC = () => {
             {displayName}
           </Typography>
           <Typography variant="body2" color="text.secondary" noWrap>
-            {user?.email}
+            {user?.Email}
           </Typography>
         </Box>
 

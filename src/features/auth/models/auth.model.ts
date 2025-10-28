@@ -5,6 +5,9 @@
  * They MUST be verified against actual API responses.
  */
 
+// Import User interface from users module (matches backend structure)
+import type { User } from '../../users/interfaces/user.interfaces';
+
 /**
  * Login request DTO
  * Based on legacy code: { email: string, password: string }
@@ -40,45 +43,11 @@ export interface AuthResponse {
 /**
  * User entity model
  *
- * ASSUMPTION: Complete user structure to be verified with backend response
- * Based on localStorage 'log-user' data
+ * NOTE: User interface is now imported from users module to ensure consistency
+ * with backend structure (UserId, FirstName, LastName, etc.)
+ * The old interface with id, email, nombre fields was outdated.
  */
-export interface User {
-  /** Unique user identifier */
-  id?: string;
-  /** User email address */
-  email?: string;
-  /** User full name */
-  nombre?: string;
-  /** User first name */
-  firstName?: string;
-  /** User last name */
-  lastName?: string;
-  /** User role (admin, supervisor, operator, etc.) */
-  rol?: string;
-  /** Alternative role field */
-  role?: string;
-  /** User department or area */
-  department?: string;
-  /** User phone number */
-  phone?: string;
-  /** Account active status */
-  isActive?: boolean;
-  /** Account creation date */
-  createdAt?: string;
-  /** Last update date */
-  updatedAt?: string;
-  /** Last login date */
-  lastLogin?: string;
-  /** User permissions */
-  permissions?: string[];
-  /** Company/Organization ID */
-  companyId?: string;
-  /** Branch/Office ID */
-  branchId?: string;
-  /** Additional user properties */
-  [key: string]: any;
-}
+// export interface User - REMOVED, now imported from users module
 
 /**
  * Token verification response

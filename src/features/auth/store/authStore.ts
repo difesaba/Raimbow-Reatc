@@ -4,7 +4,9 @@
 
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import type { LoginDTO, User } from '../models';
+import type { LoginDTO } from '../models';
+// Import User from users module (correct backend structure with UserId, FirstName, etc.)
+import type { User } from '../../users/interfaces/user.interfaces';
 import * as authService from '../services/authService';
 import { showGlobalSuccess } from '@/features/shared/contexts';
 

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { showGlobalError } from '@/features/shared/contexts';
 import { useAuthStore } from '@/features/auth/store/authStore';
+import { ROUTES } from '@/config/router/routes';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -50,13 +51,13 @@ api.interceptors.response.use(
 
       // 3️⃣ Guardar ruta actual para redirección después del login
       const currentPath = window.location.pathname + window.location.search;
-      if (currentPath !== '/login' && !currentPath.startsWith('/login')) {
+      if (currentPath !== ROUTES.LOGIN && !currentPath.startsWith(ROUTES.LOGIN)) {
         sessionStorage.setItem('redirectAfterLogin', currentPath);
       }
 
       // 4️⃣ Redirigir a la página de login INMEDIATAMENTE
       // No usar setTimeout para evitar race conditions con React Router
-      window.location.href = '/login';
+      window.location.href = ROUTES.LOGIN;
     }
 
     // Propagar el error para que pueda ser manejado por el código llamante

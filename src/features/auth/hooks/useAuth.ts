@@ -5,7 +5,9 @@
 
 import { useCallback, useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
-import type { LoginDTO, User } from '../models';
+import type { LoginDTO } from '../models';
+// Import User from users module (correct backend structure with UserId, FirstName, etc.)
+import type { User } from '../../users/interfaces/user.interfaces';
 
 /**
  * Authentication hook return type
@@ -78,11 +80,15 @@ export const useAuth = (): UseAuthReturn => {
     (role: string): boolean => {
       if (!user) return false;
 
-      // Check multiple possible role field names for compatibility
-      const userRole = user.role || user.rol || (user as any).RoleName;
+      // User interface now uses backend structure (IsAdmin, RoleId)
+      // Check if user is admin first
+      if (user.IsAdmin) return true;
+
+      // RoleName is not in the base interface, but may be present in login response
+      const userRole = (user as any).RoleName;
       if (!userRole) return false;
 
-      // Exact match or check if user has admin role (admin has all permissions)
+      // Exact match or check if user has admin role
       return userRole.toLowerCase() === role.toLowerCase() ||
              userRole.toLowerCase() === 'admin';
     },
@@ -96,13 +102,13 @@ export const useAuth = (): UseAuthReturn => {
     (permission: string): boolean => {
       if (!user) return false;
 
-      // Admin has all permissions
-      const userRole = user.role || user.rol || (user as any).RoleName;
-      if (userRole?.toLowerCase() === 'admin') return true;
+      // Admin has all permissions (using backend IsAdmin field)
+      if (user.IsAdmin) return true;
 
-      // Check permissions array if exists
-      if (user.permissions && Array.isArray(user.permissions)) {
-        return user.permissions.includes(permission);
+      // Check permissions array if exists (may be in extended user data)
+      const permissions = (user as any).permissions;
+      if (permissions && Array.isArray(permissions)) {
+        return permissions.includes(permission);
       }
 
       return false;
@@ -112,40 +118,24 @@ export const useAuth = (): UseAuthReturn => {
 
   /**
    * Get user display name
-   * Supports multiple field naming conventions:
-   * - Spanish: nombre
-   * - PascalCase: FirstName, LastName (backend format)
-   * - camelCase: firstName, lastName
+   * Uses backend structure: FirstName, LastName, Email (PascalCase)
    */
   const displayName = user
-    ? user.nombre ||
-      `${(user as any).FirstName || user.firstName || ''} ${(user as any).LastName || user.lastName || ''}`.trim() ||
-      user.email ||
+    ? `${user.FirstName || ''} ${user.LastName || ''}`.trim() ||
+      user.Email ||
       'Usuario'
     : '';
 
   /**
    * Get user initials for avatar
-   * Supports multiple field naming conventions:
-   * - Spanish: nombre
-   * - PascalCase: FirstName, LastName (backend format)
-   * - camelCase: firstName, lastName
+   * Uses backend structure: FirstName, LastName, Email (PascalCase)
    */
   const initials = (() => {
     if (!user) return '';
 
-    // Try to get initials from nombre (full name in Spanish)
-    if (user.nombre) {
-      const parts = user.nombre.split(' ').filter(Boolean);
-      if (parts.length >= 2) {
-        return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-      }
-      return parts[0]?.substring(0, 2).toUpperCase() || '';
-    }
-
-    // Try FirstName and LastName (PascalCase - backend format)
-    const firstName = (user as any).FirstName || user.firstName;
-    const lastName = (user as any).LastName || user.lastName;
+    // Get initials from FirstName and LastName (backend format)
+    const firstName = user.FirstName;
+    const lastName = user.LastName;
 
     if (firstName && lastName) {
       return `${firstName[0]}${lastName[0]}`.toUpperCase();
@@ -157,8 +147,8 @@ export const useAuth = (): UseAuthReturn => {
     }
 
     // Fallback to email
-    if (user.email) {
-      return user.email.substring(0, 2).toUpperCase();
+    if (user.Email) {
+      return user.Email.substring(0, 2).toUpperCase();
     }
 
     return 'U';

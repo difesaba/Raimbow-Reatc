@@ -7,12 +7,13 @@ import { apiService } from '@/config/services/apiService';
 import type {
   LoginDTO,
   AuthResponse,
-  User,
   OperationResult,
   PasswordResetDTO,
   PasswordChangeDTO,
   RegisterDTO
 } from '../../models';
+// Import User from users module (correct backend structure with UserId, FirstName, etc.)
+import type { User } from '../../../users/interfaces/user.interfaces';
 
 /**
  * Local storage keys for authentication data
