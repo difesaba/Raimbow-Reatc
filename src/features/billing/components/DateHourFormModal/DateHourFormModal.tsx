@@ -70,7 +70,8 @@ export const DateHourFormModal: React.FC<DateHourFormModalProps> = ({
     if (open) {
       if (editRecord) {
         // Modo edición: prellenar con datos existentes
-        setFecha(dayjs(editRecord.DateHour));
+        // Extraer solo YYYY-MM-DD para evitar conversión de timezone
+        setFecha(dayjs(editRecord.DateHour.split('T')[0]));
         setTimeIni(dayjs(`2000-01-01 ${editRecord.TimeIni}`));
         setTimeEnd(dayjs(`2000-01-01 ${editRecord.TimeEnd}`));
         setHasLunch(editRecord.DiscountHour > 0);

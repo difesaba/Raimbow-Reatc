@@ -134,7 +134,9 @@ export const DateHourTable = forwardRef<DateHourTableHandle, DateHourTableProps>
      * 📅 Formatear fecha
      */
     const formatDate = (dateString: string): string => {
-      return dayjs(dateString).format('DD/MM/YYYY');
+      // Extraer solo YYYY-MM-DD, ignorando hora y timezone para evitar conversión a hora local
+      const dateOnly = dateString.split('T')[0];
+      return dayjs(dateOnly).format('DD/MM/YYYY');
     };
 
     return (
