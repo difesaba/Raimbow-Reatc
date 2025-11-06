@@ -1,44 +1,80 @@
 // src/features/landing/components/ServicesSection.tsx
-import { Box, Container, Typography, Card, CardContent, Stack } from '@mui/material';
+import { Box, Container, Typography, Card, CardContent, Stack, List, ListItem, ListItemText } from '@mui/material';
 import {
   Home as HomeIcon,
   Business as BusinessIcon,
   Brush as InteriorIcon,
   Landscape as ExteriorIcon,
-  ColorLens as CustomIcon,
-  Apartment as CommercialIcon
+  Kitchen as CabinetIcon,
+  Deck as DeckIcon
 } from '@mui/icons-material';
 
 const services = [
   {
-    icon: HomeIcon,
-    title: 'Residential Painting',
-    description: 'Complete interior and exterior painting services for homes, apartments, and condominiums'
+    icon: InteriorIcon,
+    title: 'Residential Interior Painting',
+    description: 'Transform your home\'s interior with premium paints and expert craftsmanship. We handle bedrooms, living rooms, kitchens, bathrooms, and entire homes in Spartanburg County.',
+    features: [
+      'Professional surface preparation',
+      'Low-VOC, family-safe paints',
+      'Clean, neat workmanship',
+      'Color consultation available'
+    ]
+  },
+  {
+    icon: ExteriorIcon,
+    title: 'Residential Exterior Painting',
+    description: 'Protect and beautify your home\'s exterior with weather-resistant coatings. Perfect for South Carolina\'s humid climate and temperature variations.',
+    features: [
+      'Pressure washing included',
+      'Weather-resistant paints',
+      'Siding, trim, and fascia',
+      '10+ year durability'
+    ]
   },
   {
     icon: BusinessIcon,
     title: 'Commercial Painting',
-    description: 'Professional painting solutions for offices, retail spaces, and commercial buildings'
+    description: 'Professional painting for offices, retail stores, restaurants, and commercial buildings throughout Spartanburg and Greenville.',
+    features: [
+      'Flexible scheduling (nights/weekends)',
+      'Fast turnaround times',
+      'Commercial-grade materials',
+      'Minimal business disruption'
+    ]
   },
   {
-    icon: InteriorIcon,
-    title: 'Interior Painting',
-    description: 'Transform your indoor spaces with expert color consultation and precise application'
+    icon: HomeIcon,
+    title: 'Industrial & Warehouses',
+    description: 'Durable coatings for warehouses, manufacturing facilities, and industrial buildings throughout Upstate SC.',
+    features: [
+      'High-traffic area coatings',
+      'Safety line marking',
+      'Epoxy floor coatings',
+      'Large-scale projects'
+    ]
   },
   {
-    icon: ExteriorIcon,
-    title: 'Exterior Painting',
-    description: 'Weather-resistant coatings and professional finishes for lasting curb appeal'
+    icon: CabinetIcon,
+    title: 'Cabinet Refinishing',
+    description: 'Refresh your kitchen or bathroom cabinets with professional painting and refinishing services.',
+    features: [
+      'Kitchen cabinet painting',
+      'Bathroom vanity refinishing',
+      'Modern finishes',
+      'Cost-effective upgrade'
+    ]
   },
   {
-    icon: CustomIcon,
-    title: 'Custom Finishes',
-    description: 'Specialty textures, decorative painting, and custom color matching services'
-  },
-  {
-    icon: CommercialIcon,
-    title: 'New Construction',
-    description: 'Complete painting services for new builds and development projects'
+    icon: DeckIcon,
+    title: 'Specialty Services',
+    description: 'Additional painting services to complete your project needs.',
+    features: [
+      'Deck staining & sealing',
+      'Fence painting',
+      'Popcorn ceiling removal',
+      'Drywall repair'
+    ]
   }
 ];
 
@@ -65,18 +101,18 @@ export const ServicesSection: React.FC = () => {
                 fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' }
               }}
             >
-              Our Services
+              Comprehensive Painting Services in Spartanburg County
             </Typography>
             <Typography
               variant="h6"
               sx={{
                 color: 'text.secondary',
-                maxWidth: 700,
+                maxWidth: 800,
                 mx: 'auto',
                 mt: 2
               }}
             >
-              Comprehensive painting solutions tailored to your needs
+              Whether you need residential or commercial painting, Rainbow Painting LLC delivers exceptional results for every project
             </Typography>
           </Box>
 
@@ -133,6 +169,20 @@ export const ServicesSection: React.FC = () => {
                     <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>
                       {service.description}
                     </Typography>
+                    <List dense sx={{ pl: 0 }}>
+                      {service.features.map((feature, idx) => (
+                        <ListItem key={idx} sx={{ py: 0.5, pl: 0 }}>
+                          <ListItemText
+                            primary={`✓ ${feature}`}
+                            primaryTypographyProps={{
+                              variant: 'body2',
+                              color: 'text.secondary',
+                              sx: { fontSize: '0.9rem' }
+                            }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
                   </Stack>
                 </CardContent>
               </Card>

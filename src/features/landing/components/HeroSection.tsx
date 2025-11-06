@@ -73,7 +73,7 @@ export const HeroSection: React.FC = () => {
               maxWidth: 800
             }}
           >
-            Professional Painting Services
+            Professional Painting Services in Spartanburg County, SC
           </Typography>
 
           {/* Subheadline */}
@@ -86,8 +86,29 @@ export const HeroSection: React.FC = () => {
               fontWeight: 400
             }}
           >
-            Transforming spaces with quality, precision, and years of experience
+            Transforming homes and businesses across Spartanburg, Greenville, and Upstate South Carolina with quality, precision, and years of experience
           </Typography>
+
+          {/* Trust Badges */}
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={{ xs: 1, sm: 3 }}
+            sx={{
+              color: 'text.secondary',
+              fontSize: { xs: '0.9rem', sm: '1rem' },
+              fontWeight: 500
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              ✓ Licensed & Insured in SC
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              ✓ Free Estimates Within 24 Hours
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              ✓ Residential & Commercial
+            </Box>
+          </Stack>
 
           {/* CTA Buttons */}
           <Stack
@@ -114,7 +135,7 @@ export const HeroSection: React.FC = () => {
                 transition: 'all 0.3s'
               }}
             >
-              Contact Us
+              Get Your Free Estimate
             </Button>
             <Button
               variant="outlined"
@@ -135,7 +156,7 @@ export const HeroSection: React.FC = () => {
                 transition: 'all 0.3s'
               }}
             >
-              Call Now
+              Call: (864) 525-8444
             </Button>
           </Stack>
         </Stack>

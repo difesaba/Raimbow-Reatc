@@ -80,10 +80,11 @@ export const AboutSection: React.FC = () => {
                 textAlign: 'center'
               }}
             >
-              Rainbow Painting LLC is a professional painting company dedicated to transforming
-              residential and commercial spaces with precision, quality, and care. With years of
-              experience in the industry, our team of skilled professionals brings expertise and
-              attention to detail to every project we undertake.
+              Rainbow Painting LLC is a locally-owned professional painting company based in Pauline,
+              South Carolina, proudly serving Spartanburg County, Greenville, and the entire Upstate region.
+              We specialize in both <strong>residential and commercial painting</strong>, treating every
+              project - whether it's a single room or a 50,000 sq ft commercial building - with the same
+              level of care and professionalism.
             </Typography>
             <Typography
               variant="body1"
@@ -95,10 +96,24 @@ export const AboutSection: React.FC = () => {
                 textAlign: 'center'
               }}
             >
-              We pride ourselves on using premium materials, maintaining the highest standards of
-              craftsmanship, and delivering results that exceed our clients' expectations. Whether
-              it's a home renovation or a large commercial project, Rainbow Painting is committed
-              to bringing your vision to life.
+              As a South Carolina-based business, we understand the unique challenges of our climate:
+              high humidity, temperature swings, and intense summer sun. That's why we use only premium,
+              weather-resistant paints from <strong>Sherwin-Williams and Benjamin Moore</strong>,
+              specifically selected for durability in our region.
+            </Typography>
+            <Typography
+              variant="body1"
+              paragraph
+              sx={{
+                fontSize: '1.1rem',
+                lineHeight: 1.8,
+                color: 'text.primary',
+                textAlign: 'center',
+                fontWeight: 500
+              }}
+            >
+              We're licensed, insured, and committed to your complete satisfaction.
+              Call <strong>(864) 525-8444</strong> for your free estimate today!
             </Typography>
           </Box>
 

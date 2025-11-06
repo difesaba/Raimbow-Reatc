@@ -4,24 +4,28 @@ import { PublicNavbar } from '../components/PublicNavbar';
 import { HeroSection } from '../components/HeroSection';
 import { AboutSection } from '../components/AboutSection';
 import { ServicesSection } from '../components/ServicesSection';
+import { WhyChooseUsSection } from '../components/WhyChooseUsSection';
 import { ProjectsGallery } from '../components/ProjectsGallery';
+import { ServiceAreasSection } from '../components/ServiceAreasSection';
 import { ContactSection } from '../components/ContactSection';
 import { Footer } from '../components/Footer';
 
 /**
- * LandingPage - Página pública de Rainbow Painting LLC
+ * LandingPage - Public page for Rainbow Painting LLC
  *
- * Landing page profesional para cumplir con requisitos de WhatsApp Business.
- * Muestra información corporativa accesible sin autenticación.
+ * Professional landing page optimized for SEO and conversions.
+ * Displays company information accessible without authentication.
  *
- * Secciones:
- * - Navbar: Logo y acceso al portal de empleados
- * - Hero: Banner principal con logo y CTAs
- * - About: Información de la empresa
- * - Services: Servicios ofrecidos
- * - Projects: Galería de trabajos realizados
- * - Contact: Información de contacto
- * - Footer: Links y copyright
+ * Sections:
+ * - Navbar: Logo and employee portal access
+ * - Hero: Main banner with logo, local keywords, and CTAs
+ * - About: Company information with local Spartanburg County focus
+ * - Services: Comprehensive residential & commercial services
+ * - Why Choose Us: Trust signals and differentiators
+ * - Projects: Gallery of completed work
+ * - Service Areas: Cities and areas served in Upstate SC
+ * - Contact: Contact information and quote request
+ * - Footer: Links and copyright
  */
 export const LandingPage: React.FC = () => {
   return (
@@ -37,7 +41,9 @@ export const LandingPage: React.FC = () => {
       <HeroSection />
       <AboutSection />
       <ServicesSection />
+      <WhyChooseUsSection />
       <ProjectsGallery />
+      <ServiceAreasSection />
       <ContactSection />
       <Footer />
     </Box>

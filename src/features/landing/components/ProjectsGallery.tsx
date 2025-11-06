@@ -13,19 +13,19 @@ import {
 import { Close as CloseIcon, ChevronLeft, ChevronRight } from '@mui/icons-material';
 
 const projectImages = [
-  { src: '/assets/images/projects/pORTADAREEL.jpg', alt: 'Residential Exterior Project' },
-  { src: '/assets/images/projects/IMG_0097.jpg', alt: 'Interior Living Room' },
-  { src: '/assets/images/projects/IMG_0116.jpg', alt: 'Interior Room Detail' },
-  { src: '/assets/images/projects/IMG_0117.jpg', alt: 'Interior Space' },
-  { src: '/assets/images/projects/IMG_9518.JPG', alt: 'Commercial Project' },
-  { src: '/assets/images/projects/IMG_9528.JPG', alt: 'Interior Painting' },
-  { src: '/assets/images/projects/IMG_9533.JPG', alt: 'Wall Treatment' },
-  { src: '/assets/images/projects/IMG_9565.JPG', alt: 'Room Transformation' },
-  { src: '/assets/images/projects/IMG_9622.JPG', alt: 'Finished Interior' },
-  { src: '/assets/images/projects/IMG_9779.JPG', alt: 'Professional Finish' },
-  { src: '/assets/images/projects/IMG_9795.JPG', alt: 'Quality Work' },
-  { src: '/assets/images/projects/IMG_9800.JPG', alt: 'Residential Interior' },
-  { src: '/assets/images/projects/IMG_9819.JPG', alt: 'Completed Project' }
+  { src: '/assets/images/projects/pORTADAREEL.jpg', alt: 'Residential Exterior Painting Project - Spartanburg County SC' },
+  { src: '/assets/images/projects/IMG_0097.jpg', alt: 'Interior Living Room Painting - Spartanburg SC' },
+  { src: '/assets/images/projects/IMG_0116.jpg', alt: 'Interior Room Painting Detail - Greenville SC' },
+  { src: '/assets/images/projects/IMG_0117.jpg', alt: 'Interior Space Painting - Upstate South Carolina' },
+  { src: '/assets/images/projects/IMG_9518.JPG', alt: 'Commercial Painting Project - Spartanburg SC' },
+  { src: '/assets/images/projects/IMG_9528.JPG', alt: 'Professional Interior Painting - Pauline SC' },
+  { src: '/assets/images/projects/IMG_9533.JPG', alt: 'Wall Treatment and Painting - Spartanburg County' },
+  { src: '/assets/images/projects/IMG_9565.JPG', alt: 'Room Transformation Painting - Greer SC' },
+  { src: '/assets/images/projects/IMG_9622.JPG', alt: 'Finished Interior Painting - Spartanburg SC' },
+  { src: '/assets/images/projects/IMG_9779.JPG', alt: 'Professional Painting Finish - Greenville SC' },
+  { src: '/assets/images/projects/IMG_9795.JPG', alt: 'Quality Painting Work - Upstate SC' },
+  { src: '/assets/images/projects/IMG_9800.JPG', alt: 'Residential Interior Painting - Spartanburg County SC' },
+  { src: '/assets/images/projects/IMG_9819.JPG', alt: 'Completed Painting Project - Pauline SC' }
 ];
 
 export const ProjectsGallery: React.FC = () => {

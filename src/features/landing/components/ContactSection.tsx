@@ -61,7 +61,7 @@ export const ContactSection: React.FC = () => {
                 fontSize: { xs: '1.75rem', sm: '2.25rem', md: '2.75rem' }
               }}
             >
-              Contact Us
+              Get Your Free Painting Estimate
             </Typography>
             <Typography
               variant="h6"
@@ -72,7 +72,7 @@ export const ContactSection: React.FC = () => {
                 mt: 2
               }}
             >
-              Get in touch for a free consultation and quote
+              Contact Rainbow Painting LLC for a free consultation and detailed quote. Serving Spartanburg, Greenville, and all of Upstate SC
             </Typography>
           </Box>
 

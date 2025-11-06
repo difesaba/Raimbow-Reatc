@@ -564,9 +564,18 @@ export const TaskEditDialog = ({
             // Determinar si realmente fue exitoso basándonos en el estado
             // Según tabla: queued, sent, delivered = éxito
             const successStatuses = ['queued', 'sent', 'delivered'];
-            const actualSuccess = notificationResult.whatsapp?.status
-              ? successStatuses.includes(notificationResult.whatsapp.status.toLowerCase())
-              : notificationResult.whatsapp?.isSuccess;
+            /* const actualSuccess = notificationResult.whatsapp?.status
+               ? successStatuses.includes(notificationResult.whatsapp.status.toLowerCase())
+               : notificationResult.whatsapp?.isSuccess;
+ */
+            const actualSuccess =
+              // 1️⃣ Si el backend marcó como enviado, es éxito
+              notificationResult.sent ||
+              // 2️⃣ Si WhatsApp devolvió status “known good”
+              (notificationResult.whatsapp?.status &&
+                successStatuses.includes(notificationResult.whatsapp.status.toLowerCase())) ||
+              // 3️⃣ Si Baileys devolvió un messageSid aunque el estado sea unknown
+              (notificationResult.whatsapp?.messageSid && notificationResult.whatsapp.status === 'unknown');
 
             if (actualSuccess && !notificationResult.whatsapp?.isSuccess) {
               console.warn('⚠️ ADVERTENCIA: Backend reportó isSuccess=false pero el estado es', notificationResult.whatsapp?.status, '(debería ser true)');
@@ -577,9 +586,12 @@ export const TaskEditDialog = ({
                 severity={
                   actualSuccess
                     ? "success"
-                    : notificationResult.reason
+                    : notificationResult.whatsapp?.status === "unknown"
                       ? "info"
-                      : "warning"
+                      : notificationResult.reason
+                        ? "info"
+                        : "warning"
+
                 }
                 onClose={() => setNotificationResult(null)}
               >
@@ -591,94 +603,94 @@ export const TaskEditDialog = ({
                       : '❌ Error en el Envío'}
                 </Typography>
 
-              {/* Usuario y teléfono */}
-              {notificationResult.user && (
-                <Typography variant="body2" gutterBottom>
-                  <strong>Usuario:</strong> {notificationResult.user}
-                  {notificationResult.phone && ` (${notificationResult.phone})`}
-                </Typography>
-              )}
+                {/* Usuario y teléfono */}
+                {notificationResult.user && (
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Usuario:</strong> {notificationResult.user}
+                    {notificationResult.phone && ` (${notificationResult.phone})`}
+                  </Typography>
+                )}
 
-              <Stack spacing={1.5} mt={1.5}>
-                {/* WhatsApp Status */}
-                {notificationResult.whatsapp && (
-                  <Box>
-                    <Typography variant="body2" component="div" gutterBottom>
-                      {actualSuccess ? '✅' : '❌'} <strong>WhatsApp</strong>
-                    </Typography>
-
-                    {actualSuccess ? (
-                      <Typography variant="body2" color="text.secondary" sx={{ ml: 3 }}>
-                        Estado: <strong>{notificationResult.whatsapp.status}</strong>
-                        {notificationResult.whatsapp.messageSid && (
-                          <> • SID: <code style={{ fontSize: '0.75em' }}>{notificationResult.whatsapp.messageSid}</code></>
-                        )}
+                <Stack spacing={1.5} mt={1.5}>
+                  {/* WhatsApp Status */}
+                  {notificationResult.whatsapp && (
+                    <Box>
+                      <Typography variant="body2" component="div" gutterBottom>
+                        {actualSuccess ? '✅' : '❌'} <strong>WhatsApp</strong>
                       </Typography>
-                    ) : notificationResult.whatsapp.isSandboxIssue ? (
-                      <Alert severity="warning" sx={{ ml: 3, mt: 0.5 }}>
-                        <Typography variant="caption" component="div" gutterBottom>
-                          <strong>Error de Sandbox de Twilio (Código 63016)</strong>
+
+                      {actualSuccess ? (
+                        <Typography variant="body2" color="text.secondary" sx={{ ml: 3 }}>
+                          Estado: <strong>{notificationResult.whatsapp.status}</strong>
+                          {notificationResult.whatsapp.messageSid && (
+                            <> • SID: <code style={{ fontSize: '0.75em' }}>{notificationResult.whatsapp.messageSid}</code></>
+                          )}
                         </Typography>
-                        <Typography variant="caption" component="div" gutterBottom>
-                          El usuario no está registrado en el sandbox de WhatsApp.
+                      ) : notificationResult.whatsapp.isSandboxIssue ? (
+                        <Alert severity="warning" sx={{ ml: 3, mt: 0.5 }}>
+                          <Typography variant="caption" component="div" gutterBottom>
+                            <strong>Error de Sandbox de Twilio (Código 63016)</strong>
+                          </Typography>
+                          <Typography variant="caption" component="div" gutterBottom>
+                            El usuario no está registrado en el sandbox de WhatsApp.
+                          </Typography>
+                          <Typography variant="caption" component="div" sx={{ mt: 1 }}>
+                            <strong>Instrucciones:</strong>
+                          </Typography>
+                          <Typography variant="caption" component="div">
+                            1. Envía un mensaje desde WhatsApp a: <strong>+1 415 523 8886</strong>
+                          </Typography>
+                          <Typography variant="caption" component="div">
+                            2. El mensaje debe decir: <code>join {notificationResult.whatsapp.errorCode || 'código-sandbox'}</code>
+                          </Typography>
+                          <Typography variant="caption" component="div">
+                            3. Espera la confirmación de Twilio
+                          </Typography>
+                        </Alert>
+                      ) : (
+                        <Typography variant="body2" color="error" sx={{ ml: 3 }}>
+                          {notificationResult.whatsapp.errorMessage
+                            || (notificationResult.whatsapp.status && notificationResult.whatsapp.status !== 'unknown'
+                              ? `Estado: ${notificationResult.whatsapp.status}`
+                              : 'No se pudo determinar el estado del envío')}
+                          {notificationResult.whatsapp.errorCode && (
+                            <> (Código: {notificationResult.whatsapp.errorCode})</>
+                          )}
                         </Typography>
-                        <Typography variant="caption" component="div" sx={{ mt: 1 }}>
-                          <strong>Instrucciones:</strong>
-                        </Typography>
-                        <Typography variant="caption" component="div">
-                          1. Envía un mensaje desde WhatsApp a: <strong>+1 415 523 8886</strong>
-                        </Typography>
-                        <Typography variant="caption" component="div">
-                          2. El mensaje debe decir: <code>join {notificationResult.whatsapp.errorCode || 'código-sandbox'}</code>
-                        </Typography>
-                        <Typography variant="caption" component="div">
-                          3. Espera la confirmación de Twilio
-                        </Typography>
-                      </Alert>
-                    ) : (
-                      <Typography variant="body2" color="error" sx={{ ml: 3 }}>
-                        {notificationResult.whatsapp.errorMessage
-                          || (notificationResult.whatsapp.status && notificationResult.whatsapp.status !== 'unknown'
-                            ? `Estado: ${notificationResult.whatsapp.status}`
-                            : 'No se pudo determinar el estado del envío')}
-                        {notificationResult.whatsapp.errorCode && (
-                          <> (Código: {notificationResult.whatsapp.errorCode})</>
-                        )}
+                      )}
+                    </Box>
+                  )}
+
+                  {/* Razón si no se envió */}
+                  {notificationResult.reason && (
+                    <Alert severity="info" sx={{ mt: 1 }}>
+                      <Typography variant="body2">
+                        {notificationResult.reason}
                       </Typography>
-                    )}
-                  </Box>
-                )}
+                    </Alert>
+                  )}
 
-                {/* Razón si no se envió */}
-                {notificationResult.reason && (
-                  <Alert severity="info" sx={{ mt: 1 }}>
-                    <Typography variant="body2">
-                      {notificationResult.reason}
-                    </Typography>
-                  </Alert>
-                )}
+                  {/* Error general */}
+                  {notificationResult.error && (
+                    <Alert severity="error" sx={{ mt: 1 }}>
+                      <Typography variant="body2">
+                        {notificationResult.error}
+                      </Typography>
+                    </Alert>
+                  )}
 
-                {/* Error general */}
-                {notificationResult.error && (
-                  <Alert severity="error" sx={{ mt: 1 }}>
-                    <Typography variant="body2">
-                      {notificationResult.error}
-                    </Typography>
-                  </Alert>
-                )}
-
-                {/* Summary */}
-                <Divider sx={{ my: 0.5 }} />
-                <Typography variant="body2" fontWeight={500}>
-                  <strong>Estado Final:</strong>{' '}
-                  {actualSuccess
-                    ? `✅ Enviado correctamente (${notificationResult.whatsapp?.status})`
-                    : notificationResult.reason
-                      ? '⚠️ Usuario sin WhatsApp configurado'
-                      : '❌ No enviado'}
-                </Typography>
-              </Stack>
-            </Alert>
+                  {/* Summary */}
+                  <Divider sx={{ my: 0.5 }} />
+                  <Typography variant="body2" fontWeight={500}>
+                    <strong>Estado Final:</strong>{' '}
+                    {actualSuccess
+                      ? `✅ Enviado correctamente (${notificationResult.whatsapp?.status})`
+                      : notificationResult.reason
+                        ? '⚠️ Usuario sin WhatsApp configurado'
+                        : '❌ No enviado'}
+                  </Typography>
+                </Stack>
+              </Alert>
             );
           })()}
 
