@@ -25,6 +25,8 @@ import { TaskEditDialog } from '../../components/TaskEditDialog';
 import { TaskAuditDialog } from '../../components/TaskAuditDialog';
 import { TaskDetailDialog } from '../../components/TaskDetailDialog';
 import { useAuthUser } from '../../../auth/store/authStore';
+import { useNotification } from '../../../shared/hooks/useNotification';
+import { interpretNotificationResult } from '../../../shared/utils/notificationHandler';
 import type { Work, NotificationResult } from '../../interfaces/work.interfaces';
 import type { TaskEditFormData } from '../../components/TaskEditDialog/TaskEditDialog.types';
 import type { FilterStatus } from '../../components/WorkAssignmentFilters/WorkAssignmentFilters.types';
@@ -56,6 +58,9 @@ export const WorkAssignmentPage = () => {
 
   // Get current authenticated user
   const currentUser = useAuthUser();
+
+  // Notification system
+  const { showSuccess, showWarning, showError, showInfo } = useNotification();
 
   // State management
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -439,6 +444,25 @@ export const WorkAssignmentPage = () => {
           }
         }
 
+        // 🔔 Mostrar toast global según el resultado de la notificación
+        const notificationInterpretation = interpretNotificationResult(notificationResult, 'Tarea creada');
+        if (notificationInterpretation.shouldShowToast) {
+          switch (notificationInterpretation.severity) {
+            case 'success':
+              showSuccess(notificationInterpretation.message);
+              break;
+            case 'warning':
+              showWarning(notificationInterpretation.message);
+              break;
+            case 'error':
+              showError(notificationInterpretation.message);
+              break;
+            case 'info':
+              showInfo(notificationInterpretation.message);
+              break;
+          }
+        }
+
         // Actualizar el work localmente
         setWorks(prev => {
           console.log('🔄 Actualizando estado local después de CREATE');
@@ -556,6 +580,25 @@ export const WorkAssignmentPage = () => {
         notificationResult = updateResponse.notification;
         console.log('📱 Notification from UPDATE response:', notificationResult);
         console.log('📱 Notification JSON completo:', JSON.stringify(notificationResult, null, 2));
+
+        // 🔔 Mostrar toast global según el resultado de la notificación
+        const notificationInterpretation = interpretNotificationResult(notificationResult, 'Tarea actualizada');
+        if (notificationInterpretation.shouldShowToast) {
+          switch (notificationInterpretation.severity) {
+            case 'success':
+              showSuccess(notificationInterpretation.message);
+              break;
+            case 'warning':
+              showWarning(notificationInterpretation.message);
+              break;
+            case 'error':
+              showError(notificationInterpretation.message);
+              break;
+            case 'info':
+              showInfo(notificationInterpretation.message);
+              break;
+          }
+        }
 
         const wasUnassigned = !workToEdit.ManagerName;
 

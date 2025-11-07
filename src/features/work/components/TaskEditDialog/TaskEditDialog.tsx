@@ -571,11 +571,14 @@ export const TaskEditDialog = ({
             const actualSuccess =
               // 1️⃣ Si el backend marcó como enviado, es éxito
               notificationResult.sent ||
-              // 2️⃣ Si WhatsApp devolvió status “known good”
+              // 2️⃣ Si WhatsApp devolvió status "known good"
               (notificationResult.whatsapp?.status &&
                 successStatuses.includes(notificationResult.whatsapp.status.toLowerCase())) ||
               // 3️⃣ Si Baileys devolvió un messageSid aunque el estado sea unknown
               (notificationResult.whatsapp?.messageSid && notificationResult.whatsapp.status === 'unknown');
+
+            // Verificar si está en cola de reintentos
+            const isEnqueuedForRetry = notificationResult.enqueuedForRetry || false;
 
             if (actualSuccess && !notificationResult.whatsapp?.isSuccess) {
               console.warn('⚠️ ADVERTENCIA: Backend reportó isSuccess=false pero el estado es', notificationResult.whatsapp?.status, '(debería ser true)');
@@ -586,11 +589,13 @@ export const TaskEditDialog = ({
                 severity={
                   actualSuccess
                     ? "success"
-                    : notificationResult.whatsapp?.status === "unknown"
+                    : isEnqueuedForRetry
                       ? "info"
-                      : notificationResult.reason
+                      : notificationResult.whatsapp?.status === "unknown"
                         ? "info"
-                        : "warning"
+                        : notificationResult.reason
+                          ? "info"
+                          : "warning"
 
                 }
                 onClose={() => setNotificationResult(null)}
@@ -598,9 +603,11 @@ export const TaskEditDialog = ({
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
                   {actualSuccess
                     ? '✅ Notificación Enviada'
-                    : notificationResult.reason
-                      ? '⚠️ Usuario Sin Configurar'
-                      : '❌ Error en el Envío'}
+                    : isEnqueuedForRetry
+                      ? '🔄 Notificación en Cola de Envío'
+                      : notificationResult.reason
+                        ? '⚠️ Usuario Sin Configurar'
+                        : '❌ Error en el Envío'}
                 </Typography>
 
                 {/* Usuario y teléfono */}
@@ -609,6 +616,19 @@ export const TaskEditDialog = ({
                     <strong>Usuario:</strong> {notificationResult.user}
                     {notificationResult.phone && ` (${notificationResult.phone})`}
                   </Typography>
+                )}
+
+                {/* Mensaje especial para reintentos */}
+                {isEnqueuedForRetry && (
+                  <Alert severity="info" sx={{ mt: 1.5 }}>
+                    <Typography variant="body2" gutterBottom>
+                      <strong>🔄 Notificación Encolada</strong>
+                    </Typography>
+                    <Typography variant="body2">
+                      El mensaje no se pudo enviar de inmediato pero ha sido agregado a la cola de reintentos automáticos.
+                      El sistema intentará enviar la notificación en breve.
+                    </Typography>
+                  </Alert>
                 )}
 
                 <Stack spacing={1.5} mt={1.5}>
@@ -685,9 +705,11 @@ export const TaskEditDialog = ({
                     <strong>Estado Final:</strong>{' '}
                     {actualSuccess
                       ? `✅ Enviado correctamente (${notificationResult.whatsapp?.status})`
-                      : notificationResult.reason
-                        ? '⚠️ Usuario sin WhatsApp configurado'
-                        : '❌ No enviado'}
+                      : isEnqueuedForRetry
+                        ? '🔄 En cola de reintentos automáticos'
+                        : notificationResult.reason
+                          ? '⚠️ Usuario sin WhatsApp configurado'
+                          : '❌ No enviado'}
                   </Typography>
                 </Stack>
               </Alert>

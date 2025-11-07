@@ -239,6 +239,7 @@ export interface NotificationChannel {
  */
 export interface NotificationResult {
   sent: boolean; // true si al menos un mensaje se envió correctamente
+  enqueuedForRetry?: boolean; // true si el mensaje fue encolado para reintentos automáticos
   user?: string; // Nombre del usuario (ej: "Juan Pérez")
   phone: string | null; // Teléfono del usuario (ej: "+13045207634")
   whatsapp: NotificationChannel; // Resultado del envío por WhatsApp
