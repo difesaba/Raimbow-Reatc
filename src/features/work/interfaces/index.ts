@@ -24,3 +24,8 @@ export type {
   SubdivisionFilters,
   SubdivisionOption
 } from './subdivision.interfaces';
+
+export type {
+  TodayMessage,
+  TodayMessagesResponse
+} from './whatsapp.interfaces';

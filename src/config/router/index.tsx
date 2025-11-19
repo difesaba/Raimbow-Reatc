@@ -24,6 +24,7 @@ import { DateHourPage } from '../../features/billing/pages/DateHourPage';
 import { LotsBySubdivisionPage } from '../../features/work/pages/LotsBySubdivisionPage';
 import { WorkAssignmentPage } from '../../features/work/pages/WorkAssignmentPage';
 import { WeeklySchedulePage } from '../../features/work/pages/WeeklySchedulePage';
+import { TodayMessagesPage } from '../../features/work/pages/TodayMessagesPage';
 
 // Users Module
 import { UsersManagementPage } from '../../features/users/pages/UsersManagementPage';
@@ -127,6 +128,16 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <MainLayout>
           <WeeklySchedulePage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/obras/mensajes',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <TodayMessagesPage />
         </MainLayout>
       </ProtectedRoute>
     ),

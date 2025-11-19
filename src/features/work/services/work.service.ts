@@ -11,6 +11,7 @@ import type {
   CreateWorkResponse,
   UpdateWorkResponse
 } from '../interfaces/work.interfaces';
+import type { TodayMessage } from '../interfaces/whatsapp.interfaces';
 
 /**
  * Helper type for API errors
@@ -521,6 +522,58 @@ export class WorkService {
       console.error('❌ Error fetching task audit:', {
         endpoint: `${this.BASE_PATH}/audit`,
         taskId,
+        error: errorMessage,
+        status: apiError.response?.status
+      });
+
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * 💬 Obtener mensajes de WhatsApp del día actual
+   * GET /api/whatsapp/messages/today
+   *
+   * @returns Array de mensajes del día con información de cola y estado
+   * @throws Error con mensaje descriptivo si la petición falla
+   */
+  static async getTodayMessages(): Promise<TodayMessage[]> {
+    try {
+      const url = '/api/whatsapp/messages/today';
+
+      console.log('💬 Fetching today\'s WhatsApp messages:', { url });
+
+      const response = await apiService.get(url);
+
+      // Normalizar respuesta del backend
+      let messages: TodayMessage[] = [];
+
+      if (Array.isArray(response.data)) {
+        // Opción 1: Array directo
+        messages = response.data;
+      } else if (response.data?.data && Array.isArray(response.data.data)) {
+        // Opción 2: Objeto con propiedad 'data'
+        messages = response.data.data;
+      } else if (response.data?.messages && Array.isArray(response.data.messages)) {
+        // Opción 3: Objeto con propiedad 'messages'
+        messages = response.data.messages;
+      } else {
+        console.warn('⚠️ Unexpected response format:', response.data);
+        messages = [];
+      }
+
+      console.log(`✅ ${messages.length} mensajes cargados exitosamente`);
+      console.log('📋 Datos de mensajes:', messages);
+
+      return messages;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      const errorMessage = apiError.response?.data?.message ||
+                          apiError.message ||
+                          'Error al obtener mensajes del día';
+
+      console.error('❌ Error fetching today\'s messages:', {
+        endpoint: '/api/whatsapp/messages/today',
         error: errorMessage,
         status: apiError.response?.status
       });

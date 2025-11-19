@@ -23,6 +23,7 @@ import {
   Security as SecurityIcon,
   CalendarMonth as CalendarMonthIcon,
   Schedule as ScheduleIcon,
+  Message as MessageIcon,
   ExpandLess,
   ExpandMore,
 } from '@mui/icons-material';
@@ -71,6 +72,11 @@ const navItems: NavItem[] = [
         text: 'Calendario Semanal',
         icon: <CalendarMonthIcon />,
         path: '/obras/calendario',
+      },
+      {
+        text: 'Mensajes de hoy',
+        icon: <MessageIcon />,
+        path: '/obras/mensajes',
       },
     ],
   },
