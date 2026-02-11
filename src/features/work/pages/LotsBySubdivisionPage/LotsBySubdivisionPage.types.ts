@@ -1,4 +1,4 @@
-import type { Subdivision } from '../../components/LotFilters';
+import type { Subdivision } from '../../components/LotFilters/LotFilters.types';
 
 /**
  * 📋 Tipos para la página LotsBySubdivision

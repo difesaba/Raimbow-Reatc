@@ -4,9 +4,9 @@ import {
   TextField,
   Autocomplete,
   Button,
-  Stack,
   Chip,
-  Typography
+  Typography,
+  Stack
 } from '@mui/material';
 import {
   Search,
@@ -117,7 +117,7 @@ export const UsersFilters = ({
           </Grid>
 
           {/* Reset filters button - Now with better sizing */}
-          <Grid size={{ xs: 12, sm: 6, md: 1 }} display="flex" alignItems="center">
+          <Grid size={{ xs: 12, sm: 6, md: 1 }} sx={{ display: 'flex', alignItems: 'center' }}>
             <Button
               variant="outlined"
               fullWidth

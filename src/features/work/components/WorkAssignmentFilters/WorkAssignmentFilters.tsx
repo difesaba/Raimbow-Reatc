@@ -125,7 +125,7 @@ export const WorkAssignmentFilters = ({
                 value={selectedDate}
                 onChange={(newValue) => {
                   if (newValue) {
-                    const dateValue = newValue instanceof Date ? newValue : new Date(newValue.toString());
+                    const dateValue = newValue instanceof Date ? newValue : new Date(String(newValue));
                     onDateChange(dateValue);
                   }
                 }}
