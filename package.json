@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "serve dist -s -n -L -p $PORT"
+    "start": "caddy run --config Caddyfile --adapter caddyfile"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -24,10 +23,11 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.3",
-    "serve": "^14.2.5",
+
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "caddy": "^0.0.13",
     "@eslint/js": "^9.36.0",
     "@types/node": "^24.6.0",
     "@types/react": "^19.1.16",
