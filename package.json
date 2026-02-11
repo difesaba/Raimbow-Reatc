@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "start": "bash start.sh"
+    "start": "caddy run --config Caddyfile --adapter caddyfile"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
