@@ -1,0 +1,1 @@
+export { WarrantyProcessPage } from './WarrantyProcessPage';

@@ -1,0 +1,1 @@
+export { WarrantyInvoicesTable } from './WarrantyInvoicesTable';

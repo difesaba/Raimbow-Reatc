@@ -24,6 +24,7 @@ import {
   CalendarMonth as CalendarMonthIcon,
   Schedule as ScheduleIcon,
   Message as MessageIcon,
+  Visibility as VisibilityIcon,
   ExpandLess,
   ExpandMore,
 } from '@mui/icons-material';
@@ -98,6 +99,11 @@ const navItems: NavItem[] = [
         text: 'Registrar Horas',
         icon: <ScheduleIcon />,
         path: '/facturacion/registrar-horas',
+      },
+      {
+        text: 'Pagos Warranty',
+        icon: <VisibilityIcon />,
+        path: '/facturacion/warrantys',
       },
     ],
   },

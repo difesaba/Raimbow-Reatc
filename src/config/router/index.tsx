@@ -19,6 +19,8 @@ import { DashboardPage } from '../../features/shared/pages/DashboardPage';
 import { ActualPayrollPage } from '../../features/billing/pages/ActualPayrollPage';
 import { EmployeePayrollReportPage } from '../../features/billing/pages/EmployeePayrollReportPage';
 import { DateHourPage } from '../../features/billing/pages/DateHourPage';
+import { WarrantyInvoicesPage } from '../../features/billing/pages/WarrantyInvoicesPage';
+import { WarrantyProcessPage } from '../../features/billing/pages/WarrantyProcessPage';
 
 // Work Module
 import { LotsBySubdivisionPage } from '../../features/work/pages/LotsBySubdivisionPage';
@@ -96,6 +98,26 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <MainLayout>
           <DateHourPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/facturacion/warrantys',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <WarrantyInvoicesPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/facturacion/warrantys/:invoiceId/procesar',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <WarrantyProcessPage />
         </MainLayout>
       </ProtectedRoute>
     ),

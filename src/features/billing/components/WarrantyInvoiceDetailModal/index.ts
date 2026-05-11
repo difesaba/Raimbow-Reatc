@@ -1,0 +1,1 @@
+export { WarrantyInvoiceDetailModal } from './WarrantyInvoiceDetailModal';

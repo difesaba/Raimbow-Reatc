@@ -20,6 +20,18 @@ const DateHourPage = lazy(() =>
   }))
 );
 
+const WarrantyInvoicesPage = lazy(() =>
+  import('../pages/WarrantyInvoicesPage').then(module => ({
+    default: module.WarrantyInvoicesPage
+  }))
+);
+
+const WarrantyProcessPage = lazy(() =>
+  import('../pages/WarrantyProcessPage').then(module => ({
+    default: module.WarrantyProcessPage
+  }))
+);
+
 /**
  * Billing module routes configuration
  * These routes should be included in the main app router
@@ -45,6 +57,14 @@ export const billingRoutes: RouteObject[] = [
         element: <DateHourPage />,
         // TODO: Add route guard for authentication
         // loader: requireAuth
+      },
+      {
+        path: 'warrantys',
+        element: <WarrantyInvoicesPage />,
+      },
+      {
+        path: 'warrantys/:invoiceId/procesar',
+        element: <WarrantyProcessPage />,
       },
       // TODO: Add more billing routes as needed
       // {
@@ -82,6 +102,11 @@ export const billingNavigation = [
         title: 'Registrar Horas',
         path: '/facturacion/registrar-horas',
         icon: 'schedule'
+      },
+      {
+        title: 'Pagos Warranty',
+        path: '/facturacion/warrantys',
+        icon: 'visibility'
       },
       // TODO: Add more navigation items
       // {

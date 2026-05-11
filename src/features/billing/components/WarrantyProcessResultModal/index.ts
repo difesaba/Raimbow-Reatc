@@ -1,0 +1,1 @@
+export { WarrantyProcessResultModal } from './WarrantyProcessResultModal';
