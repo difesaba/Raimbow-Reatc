@@ -91,6 +91,20 @@ export const PagosProgramacionPagarPage: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parsedUserId]);
 
+  // Pre-cargar valor fijo 60 para ProgressStatusId === 7
+  useEffect(() => {
+    if (!detalle) return;
+    setValues((prev) => {
+      const next = { ...prev };
+      detalle.forEach((item, i) => {
+        if (item.ProgressStatusId === 7 && !next[i]) {
+          next[i] = '60';
+        }
+      });
+      return next;
+    });
+  }, [detalle]);
+
   // Cleanup blob URL on unmount
   useEffect(() => {
     return () => {
@@ -350,17 +364,23 @@ export const PagosProgramacionPagarPage: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell align="right" sx={{ minWidth: 180 }}>
-                          <TextField
-                            size="small"
-                            fullWidth
-                            label="Valor"
-                            type="number"
-                            value={values[index] ?? ''}
-                            error={isMissing}
-                            disabled={saving || isLocked}
-                            onChange={(e) => handleValueChange(index, e.target.value)}
-                            slotProps={{ htmlInput: { min: 0, step: '0.01' } }}
-                          />
+                          {item.ProgressStatusId === 7 ? (
+                            <Typography variant="body2" fontWeight={700} color="success.main">
+                              {formatCurrency(60)}
+                            </Typography>
+                          ) : (
+                            <TextField
+                              size="small"
+                              fullWidth
+                              label="Valor"
+                              type="number"
+                              value={values[index] ?? ''}
+                              error={isMissing}
+                              disabled={saving || isLocked}
+                              onChange={(e) => handleValueChange(index, e.target.value)}
+                              slotProps={{ htmlInput: { min: 0, step: '0.01' } }}
+                            />
+                          )}
                         </TableCell>
                       </TableRow>
                     );
