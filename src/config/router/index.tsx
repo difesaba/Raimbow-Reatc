@@ -21,6 +21,9 @@ import { EmployeePayrollReportPage } from '../../features/billing/pages/Employee
 import { DateHourPage } from '../../features/billing/pages/DateHourPage';
 import { WarrantyInvoicesPage } from '../../features/billing/pages/WarrantyInvoicesPage';
 import { WarrantyProcessPage } from '../../features/billing/pages/WarrantyProcessPage';
+import { PagosProgramacionPage } from '../../features/billing/pages/PagosProgramacionPage';
+import { PagosProgramacionPagarPage } from '../../features/billing/pages/PagosProgramacionPagarPage';
+import { FacturasProgramacionPage } from '../../features/billing/pages/FacturasProgramacionPage';
 
 // Work Module
 import { LotsBySubdivisionPage } from '../../features/work/pages/LotsBySubdivisionPage';
@@ -118,6 +121,36 @@ export const router = createBrowserRouter([
       <ProtectedRoute>
         <MainLayout>
           <WarrantyProcessPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/facturacion/pagos-programacion',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <PagosProgramacionPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/facturacion/pagos-programacion/pagar/:userId',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <PagosProgramacionPagarPage />
+        </MainLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/facturacion/facturas-programacion',
+    element: (
+      <ProtectedRoute>
+        <MainLayout>
+          <FacturasProgramacionPage />
         </MainLayout>
       </ProtectedRoute>
     ),

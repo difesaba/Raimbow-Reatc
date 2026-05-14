@@ -27,6 +27,8 @@ import {
   Visibility as VisibilityIcon,
   ExpandLess,
   ExpandMore,
+  EventNote as EventNoteIcon,
+  ReceiptLong as ReceiptLongIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -104,6 +106,16 @@ const navItems: NavItem[] = [
         text: 'Pagos Warranty',
         icon: <VisibilityIcon />,
         path: '/facturacion/warrantys',
+      },
+      {
+        text: 'Pagos Programación',
+        icon: <EventNoteIcon />,
+        path: '/facturacion/pagos-programacion',
+      },
+      {
+        text: 'Facturas Programación',
+        icon: <ReceiptLongIcon />,
+        path: '/facturacion/facturas-programacion',
       },
     ],
   },

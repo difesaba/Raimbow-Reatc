@@ -32,6 +32,12 @@ const WarrantyProcessPage = lazy(() =>
   }))
 );
 
+const PagosProgramacionPage = lazy(() =>
+  import('../pages/PagosProgramacionPage').then(module => ({
+    default: module.PagosProgramacionPage
+  }))
+);
+
 /**
  * Billing module routes configuration
  * These routes should be included in the main app router
@@ -65,6 +71,10 @@ export const billingRoutes: RouteObject[] = [
       {
         path: 'warrantys/:invoiceId/procesar',
         element: <WarrantyProcessPage />,
+      },
+      {
+        path: 'pagos-programacion',
+        element: <PagosProgramacionPage />,
       },
       // TODO: Add more billing routes as needed
       // {
