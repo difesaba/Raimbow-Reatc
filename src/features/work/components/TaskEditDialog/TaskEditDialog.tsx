@@ -40,6 +40,14 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { es } from 'date-fns/locale';
 import { UserService } from '../../../users/services/user.service';
+import { WorkService } from '../../services/work.service';
+import { WhatsAppSendButton } from '../WhatsAppSendButton';
+import {
+  buildTaskAssignmentMessage,
+  hasBrokenEmojis,
+  normalizeWhatsAppPhone,
+  restoreMessageEmojis
+} from '../../utils/whatsapp.utils';
 import type { User } from '../../../users/interfaces/user.interfaces';
 import type { TaskEditDialogProps, Manager } from './TaskEditDialog.types';
 import type { NotificationResult } from '../../interfaces/work.interfaces';
@@ -125,6 +133,10 @@ export const TaskEditDialog = ({
   // Notification state
   const [notificationResult, setNotificationResult] = useState<NotificationResult | null>(null);
 
+  // WhatsApp manual resend state
+  const [whatsappMessage, setWhatsappMessage] = useState<string>('');
+  const [loadingWhatsappMessage, setLoadingWhatsappMessage] = useState(false);
+
   // Detect if this is first assignment or edit
   const isFirstAssignment = !work?.TaskId || work?.TaskId === 0;
 
@@ -138,6 +150,97 @@ export const TaskEditDialog = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, work]);
+
+  /**
+   * 📱 Resolver el mensaje de WhatsApp a reenviar manualmente.
+   *
+   * Prioridad:
+   * 1. El mensaje real generado por el backend (cola de WhatsApp del día)
+   * 2. Un mensaje de respaldo construido con los datos de la asignación
+   */
+  useEffect(() => {
+    if (!notificationResult) {
+      setWhatsappMessage('');
+      return;
+    }
+
+    let cancelled = false;
+
+    // 1️⃣ Respaldo inmediato: el botón queda usable aunque falle la consulta
+    const fallbackMessage = buildTaskAssignmentMessage({
+      managerName: selectedManager?.name || work?.ManagerName,
+      workName: work?.WorkName,
+      lotNumber: work?.Number,
+      clientName: work?.ClientName,
+      address: work?.Address,
+      startDate: startDate ? formatDate(startDate) : undefined,
+      endDate: endDate ? formatDate(endDate) : undefined,
+      observations: observations
+    });
+    setWhatsappMessage(fallbackMessage);
+
+    // 2️⃣ Intentar recuperar el mensaje exacto que envió el backend
+    const resolveBackendMessage = async () => {
+      setLoadingWhatsappMessage(true);
+
+      try {
+        const messages = await WorkService.getTodayMessages();
+        const normalizedPhone = normalizeWhatsAppPhone(notificationResult.phone);
+
+        // Ordenar de más reciente a más antiguo
+        const sorted = [...messages].sort(
+          (a, b) => new Date(b.CreatedAt).getTime() - new Date(a.CreatedAt).getTime()
+        );
+
+        // Preferir coincidencia por TaskId; si no hay, coincidir por teléfono
+        const byTaskId = work?.TaskId
+          ? sorted.filter(message => message.TaskId === work.TaskId)
+          : [];
+
+        const byPhone = normalizedPhone
+          ? sorted.filter(message => normalizeWhatsAppPhone(message.UserWhatsApp) === normalizedPhone)
+          : [];
+
+        const candidates = byTaskId.length > 0 ? byTaskId : byPhone;
+
+        // ⚠️ El SP devuelve dos filas por tarea (WhatsAppQueue + WhatsAppMessageLog).
+        // La de WhatsAppMessageLog tiene los emojis rotos ("??") porque la columna
+        // Body es TEXT (no Unicode), así que preferimos siempre la copia sana.
+        const matched = candidates.find(message => !hasBrokenEmojis(message.Message))
+          || candidates[0];
+
+        console.log('📱 Mensaje de WhatsApp resuelto:', {
+          TaskId: work?.TaskId,
+          phone: notificationResult.phone,
+          'candidatos por TaskId': byTaskId.length,
+          'candidatos por teléfono': byPhone.length,
+          'copia elegida QueueId': matched?.QueueId,
+          'la copia elegida viene rota': hasBrokenEmojis(matched?.Message),
+          'usando respaldo': !matched
+        });
+
+        if (matched?.Message && !cancelled) {
+          // Si aun así llegó rota (solo existe la copia de MessageLog),
+          // reconstruimos los emojis por etiqueta.
+          setWhatsappMessage(restoreMessageEmojis(matched.Message));
+        }
+      } catch (err: unknown) {
+        // No es crítico: se mantiene el mensaje de respaldo
+        console.warn('⚠️ No se pudo obtener el mensaje del backend, se usa el de respaldo:', err);
+      } finally {
+        if (!cancelled) {
+          setLoadingWhatsappMessage(false);
+        }
+      }
+    };
+
+    resolveBackendMessage();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notificationResult]);
 
   /**
    * Initialize form data from work prop
@@ -288,6 +391,8 @@ export const TaskEditDialog = ({
     setError(null);
     setNotificationResult(null);
     setIsDateOutOfRange(false);
+    setWhatsappMessage('');
+    setLoadingWhatsappMessage(false);
   };
 
   /**
@@ -711,6 +816,49 @@ export const TaskEditDialog = ({
                           ? '⚠️ Usuario sin WhatsApp configurado'
                           : '❌ No enviado'}
                   </Typography>
+
+                  {/* Reenvío manual por WhatsApp Web */}
+                  <Divider sx={{ my: 0.5 }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" component="div" gutterBottom>
+                      {loadingWhatsappMessage
+                        ? 'Preparando el mensaje...'
+                        : 'Abre WhatsApp Web con el mensaje listo para enviar manualmente.'}
+                    </Typography>
+                    <WhatsAppSendButton
+                      phone={notificationResult.phone}
+                      message={whatsappMessage}
+                      disabled={loadingWhatsappMessage}
+                      fullWidth={isMobile}
+                    />
+                    {whatsappMessage && !loadingWhatsappMessage && (
+                      <Paper
+                        elevation={0}
+                        sx={{
+                          mt: 1.5,
+                          p: 1.5,
+                          bgcolor: 'grey.50',
+                          border: 1,
+                          borderColor: 'grey.200',
+                          maxHeight: 160,
+                          overflowY: 'auto'
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          component="pre"
+                          sx={{
+                            m: 0,
+                            fontFamily: 'monospace',
+                            whiteSpace: 'pre-wrap',
+                            wordBreak: 'break-word'
+                          }}
+                        >
+                          {whatsappMessage}
+                        </Typography>
+                      </Paper>
+                    )}
+                  </Box>
                 </Stack>
               </Alert>
             );
